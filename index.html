@@ -1,265 +1,224 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>말씀 조각 맞추기</title>
-
   <!-- SUIT 폰트 -->
   <link href="https://cdn.jsdelivr.net/gh/sunn-us/SUIT/fonts/static/woff2/SUIT.css" rel="stylesheet">
-
   <style>
-   /* ============================
-   BiblePuzzle — Pastel Playful CSS (Full Overhaul)
-   HTML/JS 수정 없이 적용
-   ============================ */
+    /* ============================
+       BiblePuzzle — Pastel Playful (Single File)
+       ============================ */
 
-/* 0) 공통 변수 */
-:root{
-  --sky1:#a7d3ff; --sky2:#8fc6ff;          /* 파스텔 하늘 */
-  --ink:#22324a; --sub:#5b6b7a;            /* 본문/보조 텍스트 */
-  --edge:rgba(34,50,74,.12);               /* 얇은 경계선 */
-  --ok:#65c18c; --warn:#f0c443;            /* 포인트 색 */
-  --chip1:#BFE3FF; --chip2:#FFD1E5; --chip3:#FFF0A6; --chip4:#CCF3D2; --chip5:#E2D6FF; /* 퍼즐칩 */
-  --r-card:26px; --r:14px;
-  --shadow-lg:0 28px 80px rgba(17,24,39,.18);
-  --shadow:0 10px 26px rgba(17,24,39,.14);
-}
+    :root{
+      --sky1:#a7d3ff; --sky2:#8fc6ff;
+      --ink:#22324a; --sub:#5b6b7a; --edge:rgba(34,50,74,.12);
+      --ok:#65c18c; --warn:#f0c443;
+      --chip1:#BFE3FF; --chip2:#FFD1E5; --chip3:#FFF0A6; --chip4:#CCF3D2; --chip5:#E2D6FF;
+      --r-card:26px; --r:14px;
+      --shadow-lg:0 28px 80px rgba(17,24,39,.18);
+      --shadow:0 10px 26px rgba(17,24,39,.14);
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+    body{
+      font:16px/1.65 'SUIT', -apple-system, 'Apple SD Gothic Neo', system-ui, sans-serif;
+      -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+      color:var(--ink);
+      background:linear-gradient(180deg,var(--sky1),var(--sky2));
+      padding:24px;
+    }
+    /* 배경 데코: 클릭 막지 않도록 뒤로 */
+    body::after{
+      content:""; position:fixed; inset:0;
+      pointer-events:none; z-index:-1; opacity:.95;
+      background-image:
+        /* 큰 구름 */
+        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='120'><path fill='%23fff' fill-opacity='.94' d='M50 95h160a44 44 0 1 0-30-76 60 60 0 0 0-98 28 30 30 0 1 0-32 48z'/></svg>"),
+        /* 작은 구름 */
+        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='100'><path fill='%23fff' fill-opacity='.92' d='M36 84h128a34 34 0 1 0-24-56 60 60 0 0 0-82 30 24 24 0 1 0-22 26z'/></svg>"),
+        /* 퍼즐(노랑) */
+        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='110' height='110' viewBox='0 0 84 84'><path fill='%23ffd36b' d='M30 8a8 8 0 1 0 16 0h10c8 0 14 6 14 14v6a 8 8 0 1 0 0 16v8c0 8-6 14-14 14H46a8 8 0 1 0-16 0H20c-8 0-14-6-14-14V44a8 8 0 1 0 0-16v-6C6 14 12 8 20 8h10z'/></svg>"),
+        /* 퍼즐(핑크) */
+        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='110' height='110' viewBox='0 0 84 84'><path fill='%23ffb3c7' d='M30 8a8 8 0 1 0 16 0h10c8 0 14 6 14 14v6a 8 8 0 1 0 0 16v8c0 8-6 14-14 14H46a8 8 0 1 0-16 0H20c-8 0-14-6-14-14V44a8 8 0 1 0 0-16v-6C6 14 12 8 20 8h10z'/></svg>");
+      background-repeat:no-repeat,no-repeat,no-repeat,no-repeat;
+      background-size:260px 120px,200px 100px,110px,110px;
+      background-position:8% 14%,86% 10%,10% 84%,90% 78%;
+    }
 
-/* 1) 베이스/배경 */
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%}
-body{
-  font:16px/1.65 'SUIT', -apple-system, 'Apple SD Gothic Neo', system-ui, sans-serif;
-  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
-  color:var(--ink);
-  background:linear-gradient(180deg, var(--sky1), var(--sky2));
-  padding:24px;
-}
-/* 구름+퍼즐조각 데코 (반복 별 제거: 다이아 패턴 방지) */
-body::after{
-  content:""; position:fixed; inset:0; pointer-events:none; z-index:-1; opacity:.95;
-  background-image:
-    /* 큰 구름 */
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='120'><path fill='%23fff' fill-opacity='.94' d='M50 95h160a44 44 0 1 0-30-76 60 60 0 0 0-98 28 30 30 0 1 0-32 48z'/></svg>"),
-    /* 작은 구름 */
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='100'><path fill='%23fff' fill-opacity='.92' d='M36 84h128a34 34 0 1 0-24-56 60 60 0 0 0-82 30 24 24 0 1 0-22 26z'/></svg>"),
-    /* 퍼즐(노랑) */
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='110' height='110' viewBox='0 0 84 84'><path fill='%23ffd36b' d='M30 8a8 8 0 1 0 16 0h10c8 0 14 6 14 14v6a8 8 0 1 0 0 16v8c0 8-6 14-14 14H46a8 8 0 1 0-16 0H20c-8 0-14-6-14-14V44a8 8 0 1 0 0-16v-6C6 14 12 8 20 8h10z'/></svg>"),
-    /* 퍼즐(핑크) */
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='110' height='110' viewBox='0 0 84 84'><path fill='%23ffb3c7' d='M30 8a8 8 0 1 0 16 0h10c8 0 14 6 14 14v6a8 8 0 1 0 0 16v8c0 8-6 14-14 14H46a8 8 0 1 0-16 0H20c-8 0-14-6-14-14V44a 8 8 0 1 0 0-16v-6C6 14 12 8 20 8h10z'/></svg>");
-  background-repeat:no-repeat, no-repeat, no-repeat, no-repeat;
-  background-size: 260px 120px, 200px 100px, 110px, 110px;
-  background-position: 8% 14%, 86% 10%, 10% 84%, 90% 78%;
-}
+    .container{max-width:980px;margin:0 auto;position:relative;z-index:0}
 
-.container{ max-width:980px; margin:0 auto; position:relative; z-index:0 }
+    /* 홈(히어로) */
+    .home-screen{
+      display:grid;place-items:center;text-align:center;gap:16px;
+      min-height:64vh;padding:56px 28px;
+      background:linear-gradient(180deg,rgba(255,255,255,.86),rgba(255,255,255,.94));
+      border:1px solid rgba(255,255,255,.85);border-radius:var(--r-card);
+      box-shadow:var(--shadow-lg);color:var(--ink);overflow:hidden;
+    }
+    .admin-link{
+      position:absolute;top:20px;right:20px;z-index:2;
+      background:rgba(255,255,255,.8);color:#234a83;border:1px solid rgba(0,0,0,.06);
+      padding:8px 14px;border-radius:999px;font-size:.9rem;cursor:pointer;
+      box-shadow:0 6px 14px rgba(0,0,0,.12);transition:transform .15s;
+    }
+    .admin-link:hover{transform:translateY(-1px)}
+    .home-screen h1{
+      font-size:clamp(42px,7vw,68px);font-weight:900;letter-spacing:.6px;color:#fff;
+      text-shadow:
+        -3px -3px 0 #2b4a7a, 3px -3px 0 #2b4a7a, -3px 3px 0 #2b4a7a, 3px 3px 0 #2b4a7a,
+        0 6px 16px rgba(0,0,0,.18);
+      background:linear-gradient(90deg,#6aa8ff,#92d6ff,#ff99c2,#ffd36b,#7ed98a);
+      -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+    }
+    .home-screen p{font-size:clamp(15px,2.2vw,18px);color:#375075}
+    .start-btn{
+      border:0;padding:14px 34px;border-radius:18px;font-weight:900;font-size:clamp(18px,3vw,22px);
+      color:#fff;cursor:pointer;background:linear-gradient(180deg,#59a3ff,#2f83ff);
+      box-shadow:0 10px 0 #2a67cc,0 16px 34px rgba(0,0,0,.22);
+      transform:translateY(0);transition:transform .12s,box-shadow .12s;
+    }
+    .start-btn:hover{transform:translateY(-2px);box-shadow:0 12px 0 #2a67cc,0 20px 40px rgba(0,0,0,.24)}
+    .start-btn:active{transform:translateY(0);box-shadow:0 8px 0 #2a67cc,0 12px 28px rgba(0,0,0,.2)}
 
-/* 2) 홈(히어로) */
-.home-screen{
-  display:grid; place-items:center; text-align:center; gap:16px;
-  min-height:64vh; padding:56px 28px;
-  background:linear-gradient(180deg, rgba(255,255,255,.86), rgba(255,255,255,.94));
-  border:1px solid rgba(255,255,255,.85); border-radius:var(--r-card);
-  box-shadow:var(--shadow-lg); color:var(--ink);
-  overflow:hidden;
-}
-/* 관리자 버튼(오른쪽 위) */
-.admin-link{
-  position:absolute; top:20px; right:20px; z-index:2;
-  background:rgba(255,255,255,.8); color:#234a83;
-  border:1px solid rgba(0,0,0,.06);
-  padding:8px 14px; border-radius:999px; font-size:.9rem; cursor:pointer;
-  box-shadow:0 6px 14px rgba(0,0,0,.12); transition:transform .15s;
-}
-.admin-link:hover{ transform:translateY(-1px) }
-/* 제목을 통통하게(시안 느낌) */
-.home-screen h1{
-  font-size:clamp(42px, 7vw, 68px);
-  font-weight:900; letter-spacing:.6px;
-  color:#fff;
-  /* 통통한 외곽선 */
-  text-shadow:
-    -3px -3px 0 #2b4a7a, 3px -3px 0 #2b4a7a, -3px 3px 0 #2b4a7a, 3px 3px 0 #2b4a7a,
-    0 6px 16px rgba(0,0,0,.18);
-  /* 여러 색 그라데이션을 글자에 적용 */
-  background:linear-gradient(90deg, #6aa8ff, #92d6ff, #ff99c2, #ffd36b, #7ed98a);
-  -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
-}
-.home-screen p{ font-size:clamp(15px,2.2vw,18px); color:#375075 }
-/* Start 버튼 — 파란 캡슐 */
-.start-btn{
-  border:0; padding:14px 34px; border-radius:18px; font-weight:900; font-size:clamp(18px,3vw,22px);
-  color:#fff; cursor:pointer;
-  background:linear-gradient(180deg,#59a3ff,#2f83ff);
-  box-shadow:0 10px 0 #2a67cc, 0 16px 34px rgba(0,0,0,.22);
-  transform:translateY(0); transition:transform .12s, box-shadow .12s;
-}
-.start-btn:hover{ transform:translateY(-2px); box-shadow:0 12px 0 #2a67cc, 0 20px 40px rgba(0,0,0,.24) }
-.start-btn:active{ transform:translateY(0); box-shadow:0 8px 0 #2a67cc, 0 12px 28px rgba(0,0,0,.2) }
+    /* 퍼즐 화면 */
+    .puzzle-screen{display:none;position:relative;padding:28px 28px 36px}
+    .puzzle-screen::before{
+      content:"";position:absolute;inset:10px;z-index:-1;border-radius:22px;
+      background:linear-gradient(180deg,rgba(255,255,255,.82),rgba(255,255,255,.94));
+      border:1px solid rgba(255,255,255,.85);box-shadow:0 20px 60px rgba(17,24,39,.14);
+      backdrop-filter:blur(4px) saturate(115%);
+    }
+    .puzzle-header{text-align:center;margin-bottom:18px}
+    .puzzle-header h2{font-size:clamp(20px,3.2vw,26px);font-weight:900;color:#1e2b46;margin-bottom:8px}
+    .verse-info{
+      display:inline-flex;align-items:center;gap:.5rem;background:#fff;color:#334155;font-weight:900;
+      border:1px solid var(--edge);padding:8px 14px;border-radius:999px;
+      box-shadow:0 6px 16px rgba(17,24,39,.08);
+    }
+    .instruction{
+      background:linear-gradient(180deg,#eef6ff,#eaf2ff);
+      border:1px solid rgba(110,168,254,.35);
+      color:#0f3a75;border-radius:14px;padding:14px 16px;font-weight:800;margin:18px 0 20px;
+    }
+    .puzzle-area{
+      display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+      background:linear-gradient(180deg,#fbfdff,#f5f8fe);border:1px solid rgba(34,50,74,.10);
+      border-radius:16px;padding:18px;min-height:260px;box-shadow:0 12px 26px rgba(17,24,39,.08) inset;
+    }
+    .puzzle-piece{
+      border:none;border-radius:14px;padding:14px 16px;font-weight:900;line-height:1.4;color:#253551;
+      box-shadow:0 10px 22px rgba(34,50,74,.10);user-select:none;-webkit-tap-highlight-color:transparent;
+      transition:transform .12s ease,box-shadow .12s ease,filter .12s ease;
+    }
+    .puzzle-piece:hover{transform:translateY(-2px);box-shadow:0 16px 28px rgba(34,50,74,.14)}
+    .puzzle-piece:active{transform:scale(.985)}
+    .puzzle-piece.selected{outline:3px solid rgba(110,168,254,.55);filter:saturate(110%)}
+    .puzzle-piece:nth-child(5n+1){background:var(--chip1)}
+    .puzzle-piece:nth-child(5n+2){background:var(--chip2)}
+    .puzzle-piece:nth-child(5n+3){background:var(--chip3)}
+    .puzzle-piece:nth-child(5n+4){background:var(--chip4)}
+    .puzzle-piece:nth-child(5n){background:var(--chip5)}
 
-/* 3) 퍼즐 화면 — 카드 섹션 */
-.puzzle-screen{ display:none; position:relative; padding:28px 28px 36px }
-.puzzle-screen::before{
-  content:""; position:absolute; inset:10px; z-index:-1;
-  border-radius:22px;
-  background:linear-gradient(180deg, rgba(255,255,255,.82), rgba(255,255,255,.94));
-  border:1px solid rgba(255,255,255,.85);
-  box-shadow:0 20px 60px rgba(17,24,39,.14);
-  backdrop-filter: blur(4px) saturate(115%);
-}
-.puzzle-header{text-align:center; margin-bottom:18px}
-.puzzle-header h2{ font-size:clamp(20px,3.2vw,26px); font-weight:900; color:#1e2b46; margin-bottom:8px }
-.verse-info{
-  display:inline-flex; align-items:center; gap:.5rem;
-  background:#fff; color:#334155; font-weight:900;
-  border:1px solid var(--edge); padding:8px 14px; border-radius:999px;
-  box-shadow:0 6px 16px rgba(17,24,39,.08);
-}
-.instruction{
-  background:linear-gradient(180deg,#eef6ff,#eaf2ff);
-  border:1px solid rgba(110,168,254,.35);
-  color:#0f3a75; border-radius:14px; padding:14px 16px; font-weight:800;
-  margin:18px 0 20px;
-}
+    .controls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+    .btn{
+      border:1px solid var(--edge);
+      background:radial-gradient(120% 100% at 50% -10%,rgba(255,255,255,.65),transparent 40%),linear-gradient(#fff,#f7f7f7);
+      color:#1f2d40;font-weight:800;min-height:44px;padding:12px 18px;border-radius:999px;cursor:pointer;
+      box-shadow:0 6px 18px rgba(31,41,55,.12);transition:transform .15s,box-shadow .15s;
+    }
+    .btn:hover{transform:translateY(-1px) scale(1.01)}
+    .btn:active{transform:translateY(0) scale(.99)}
+    .hint-btn{background:linear-gradient(#eaf4ff,#e2f0ff);border-color:rgba(110,168,254,.45);color:#0f3a75}
+    .back-btn{background:linear-gradient(#f5f5f5,#eeeeee)}
 
-/* 퍼즐 칩 그리드 */
-.puzzle-area{
-  display:grid; gap:12px;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-  background:linear-gradient(180deg,#fbfdff,#f5f8fe);
-  border:1px solid rgba(34,50,74,.10);
-  border-radius:16px; padding:18px; min-height:260px;
-  box-shadow:0 12px 26px rgba(17,24,39,.08) inset;
-}
-.puzzle-piece{
-  border:none; border-radius:14px; padding:14px 16px;
-  font-weight:900; line-height:1.4; color:#253551;
-  box-shadow:0 10px 22px rgba(34,50,74,.10);
-  user-select:none; -webkit-tap-highlight-color:transparent;
-  transition: transform .12s ease, box-shadow .12s ease, filter .12s ease;
-}
-.puzzle-piece:hover{ transform:translateY(-2px); box-shadow:0 16px 28px rgba(34,50,74,.14) }
-.puzzle-piece:active{ transform:scale(.985) }
-.puzzle-piece.selected{ outline:3px solid rgba(110,168,254,.55); filter:saturate(110%) }
-/* 파스텔 순환 */
-.puzzle-piece:nth-child(5n+1){ background:var(--chip1) }
-.puzzle-piece:nth-child(5n+2){ background:var(--chip2) }
-.puzzle-piece:nth-child(5n+3){ background:var(--chip3) }
-.puzzle-piece:nth-child(5n+4){ background:var(--chip4) }
-.puzzle-piece:nth-child(5n){   background:var(--chip5) }
+    /* 결과 화면 */
+    .result-screen{display:none;position:relative;padding:28px;text-align:center}
+    .result-screen::before{
+      content:"";position:absolute;inset:10px;z-index:-1;border-radius:22px;
+      background:linear-gradient(180deg,rgba(255,255,255,.82),rgba(255,255,255,.94));
+      border:1px solid rgba(255,255,255,.85);box-shadow:0 20px 60px rgba(17,24,39,.14);
+      backdrop-filter:blur(4px) saturate(115%);
+    }
+    .result-title{font-size:clamp(22px,3.6vw,28px);color:var(--ok);font-weight:900;margin-bottom:14px}
+    .correct-verse{
+      background:linear-gradient(180deg,#fcfffb,#f7fff7);border:1px solid rgba(101,193,140,.45);
+      border-radius:18px;padding:22px;margin:18px 0;box-shadow:0 12px 32px rgba(17,24,39,.10);
+      font-size:1.08rem;line-height:1.65;color:#1f2937;font-weight:800;
+    }
+    .explanation{
+      background:linear-gradient(180deg,#fff9e6,#fff4d6);border-left:4px solid var(--warn);
+      border-radius:10px;padding:18px;margin:16px 0;text-align:left;color:#374151;font-weight:800;
+    }
+    .explanation h4{color:#8b6c53;margin:0 0 8px}
 
-.controls{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap }
-.btn{
-  border:1px solid var(--edge);
-  background:
-    radial-gradient(120% 100% at 50% -10%, rgba(255,255,255,.65), transparent 40%),
-    linear-gradient(#fff,#f7f7f7);
-  color:#1f2d40; font-weight:800; min-height:44px; padding:12px 18px;
-  border-radius:999px; cursor:pointer; box-shadow:0 6px 18px rgba(31,41,55,.12);
-  transition: transform .15s, box-shadow .15s;
-}
-.btn:hover{ transform:translateY(-1px) scale(1.01) }
-.btn:active{ transform:translateY(0) scale(.99) }
-.hint-btn{
-  background:linear-gradient(#eaf4ff,#e2f0ff);
-  border-color:rgba(110,168,254,.45);
-  color:#0f3a75;
-}
-.back-btn{ background:linear-gradient(#f5f5f5,#eeeeee) }
+    /* 관리자 화면 */
+    .admin-screen{display:none;padding:28px}
+    .admin-header{text-align:center;color:#8b6c53;margin-bottom:22px}
+    .verse-list{margin-bottom:24px}
+    .verse-item{
+      background:linear-gradient(180deg,#f9fafb,#f7f7f7);border:1px solid rgba(17,24,39,.08);
+      border-left:4px solid #8b6c53;border-radius:14px;padding:18px;margin-bottom:12px;
+    }
+    .verse-reference{font-weight:900;color:#8b6c53;margin-bottom:8px;letter-spacing:.2px}
+    .verse-pieces{margin-bottom:8px;line-height:1.55;color:#111827;font-weight:800}
+    .verse-explanation{font-size:.95rem;color:#6b7280}
+    .verse-actions{margin-top:10px}
 
-/* 4) 결과 화면 */
-.result-screen{ display:none; position:relative; padding:28px; text-align:center }
-.result-screen::before{
-  content:""; position:absolute; inset:10px; z-index:-1;
-  border-radius:22px; background:linear-gradient(180deg, rgba(255,255,255,.82), rgba(255,255,255,.94));
-  border:1px solid rgba(255,255,255,.85); box-shadow:0 20px 60px rgba(17,24,39,.14);
-  backdrop-filter: blur(4px) saturate(115%);
-}
-.result-title{ font-size:clamp(22px,3.6vw,28px); color:var(--ok); font-weight:900; margin-bottom:14px }
-.correct-verse{
-  background:linear-gradient(180deg,#fcfffb,#f7fff7);
-  border:1px solid rgba(101,193,140,.45);
-  border-radius:18px; padding:22px; margin:18px 0;
-  box-shadow:0 12px 32px rgba(17,24,39,.10);
-  font-size:1.08rem; line-height:1.65; color:#1f2937; font-weight:800;
-}
-.explanation{
-  background:linear-gradient(180deg,#fff9e6,#fff4d6);
-  border-left:4px solid var(--warn); border-radius:10px;
-  padding:18px; margin:16px 0; text-align:left; color:#374151; font-weight:800;
-}
-.explanation h4{ color:#8b6c53; margin:0 0 8px }
+    .admin-form{
+      background:#fff;border:1px solid rgba(17,24,39,.08);border-radius:16px;padding:22px;
+      box-shadow:0 8px 20px rgba(17,24,39,.06);margin-bottom:18px;
+    }
+    .form-group{margin-bottom:16px}
+    .form-label{display:block;color:#8b6c53;font-weight:900;margin-bottom:8px}
+    .form-input{
+      width:100%;padding:12px 14px;border:1px solid rgba(34,50,74,.14);border-radius:10px;font:inherit;
+      transition:border-color .15s;
+    }
+    .form-input:focus{outline:none;border-color:rgba(110,168,254,.6)}
+    .form-textarea{min-height:120px;resize:vertical}
+    .piece-item{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+    .piece-input{flex:1}
+    .add-piece-btn{background:linear-gradient(#eafdf0,#e1f9ea);color:#0d5e34;border-color:rgba(101,193,140,.45)}
+    .remove-piece-btn{background:linear-gradient(#ffe9ea,#ffdfe1);border-color:rgba(239,83,80,.35)}
+    .edit-btn{background:linear-gradient(#eaf4ff,#e2f0ff);border-color:rgba(110,168,254,.45);color:#0f3a75}
+    .delete-btn{background:linear-gradient(#ffe9ea,#ffdfe1)}
+    .back-btn{background:linear-gradient(#f5f5f5,#eeeeee)}
 
-/* 5) 관리자 화면 */
-.admin-screen{ display:none; padding:28px }
-.admin-header{ text-align:center; color:#8b6c53; margin-bottom:22px }
-.verse-list{ margin-bottom:24px }
-.verse-item{
-  background:linear-gradient(180deg,#f9fafb,#f7f7f7);
-  border:1px solid rgba(17,24,39,.08);
-  border-left:4px solid #8b6c53;
-  border-radius:14px; padding:18px; margin-bottom:12px;
-}
-.verse-reference{ font-weight:900; color:#8b6c53; margin-bottom:8px; letter-spacing:.2px }
-.verse-pieces{ margin-bottom:8px; line-height:1.55; color:#111827; font-weight:800 }
-.verse-explanation{ font-size:.95rem; color:#6b7280 }
-.verse-actions{ margin-top:10px }
+    /* 모달 */
+    .password-modal{position:fixed;inset:0;display:flex;justify-content:center;align-items:center;
+      background:rgba(15,23,42,.45);backdrop-filter:blur(6px);z-index:1000}
+    .password-modal-content{
+      background:linear-gradient(180deg,#ffffff,#fbfbfb);
+      border:1px solid rgba(255,255,255,.7);border-radius:16px;padding:26px;width:min(420px,92%);
+      box-shadow:var(--shadow);text-align:center;
+    }
+    .password-input{
+      width:100%;padding:12px;margin:16px 0;border:1px solid rgba(34,50,74,.14);border-radius:10px;text-align:center;font-size:1.05rem;
+    }
+    .hidden{display:none!important}
 
-.admin-form{
-  background:#fff; border:1px solid rgba(17,24,39,.08); border-radius:16px; padding:22px;
-  box-shadow:0 8px 20px rgba(17,24,39,.06); margin-bottom:18px;
-}
-.form-group{ margin-bottom:16px }
-.form-label{ display:block; color:#8b6c53; font-weight:900; margin-bottom:8px }
-.form-input{
-  width:100%; padding:12px 14px; border:1px solid rgba(34,50,74,.14); border-radius:10px; font:inherit;
-  transition:border-color .15s;
-}
-.form-input:focus{ outline:none; border-color:rgba(110,168,254,.6) }
-.form-textarea{ min-height:120px; resize:vertical }
-.piece-item{ display:flex; gap:10px; align-items:center; margin-bottom:10px }
-.piece-input{ flex:1 }
-.add-piece-btn{ background:linear-gradient(#eafdf0,#e1f9ea); color:#0d5e34; border-color:rgba(101,193,140,.45) }
-.remove-piece-btn{ background:linear-gradient(#ffe9ea,#ffdfe1); border-color:rgba(239,83,80,.35) }
-.edit-btn{ background:linear-gradient(#eaf4ff,#e2f0ff); border-color:rgba(110,168,254,.45); color:#0f3a75 }
-.delete-btn{ background:linear-gradient(#ffe9ea,#ffdfe1) }
-.back-btn{ background:linear-gradient(#f5f5f5,#eeeeee) }
+    /* 모바일 */
+    @media (max-width:768px){
+      body{padding:16px}
+      .home-screen{min-height:58vh;padding:40px 18px}
+      .puzzle-screen,.result-screen,.admin-screen{padding:22px}
+      .puzzle-area{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
+    }
 
-/* 6) 모달 */
-.password-modal{ position:fixed; inset:0; display:flex; justify-content:center; align-items:center;
-  background:rgba(15,23,42,.45); backdrop-filter: blur(6px); z-index:1000 }
-.password-modal-content{
-  background:linear-gradient(180deg,#ffffff,#fbfbfb);
-  border:1px solid rgba(255,255,255,.7); border-radius:16px; padding:26px; width:min(420px,92%);
-  box-shadow:var(--shadow); text-align:center;
-}
-.password-input{
-  width:100%; padding:12px; margin:16px 0; border:1px solid rgba(34,50,74,.14); border-radius:10px; text-align:center; font-size:1.05rem;
-}
-.hidden{ display:none !important }
-
-/* 7) 모바일 */
-@media (max-width:768px){
-  body{ padding:16px }
-  .home-screen{ min-height:58vh; padding:40px 18px }
-  .puzzle-screen,.result-screen,.admin-screen{ padding:22px }
-  .puzzle-area{ grid-template-columns: repeat(auto-fit, minmax(140px,1fr)) }
-}
-
-/* 8) 안전장치: 클릭막힘 방지 */
-button, .btn, .start-btn { pointer-events:auto } 
+    /* 안전장치 */
+    button,.btn,.start-btn{pointer-events:auto}
   </style>
 </head>
-
 <body>
   <div class="container">
     <!-- 홈 화면 -->
     <div class="home-screen" id="homeScreen">
       <button class="admin-link" onclick="showPasswordModal()">⚙️ 관리자</button>
       <h1>🧩 말씀 조각 맞추기</h1>
-      <p>성경 구절의 순서를 맞춰보세요!<br/>말씀의 흐름을 느끼며 더 깊이 묵상해보아요.</p>
-      <button class="start-btn" onclick="startGame()">시작하기</button>
+      <p>성경 구절의 순서를 맞춰보세요!<br>말씀의 흐름을 느끼며 더 깊이 묵상해보아요.</p>
+      <button class="start-btn" onclick="startGame()">Start</button>
     </div>
 
     <!-- 퍼즐 화면 -->
@@ -287,12 +246,10 @@ button, .btn, .start-btn { pointer-events:auto }
     <div class="result-screen" id="resultScreen">
       <h2 class="result-title">🎉 정답입니다!</h2>
       <div class="correct-verse" id="correctVerse"></div>
-
       <div class="explanation">
         <h4>📖 말씀 묵상</h4>
         <p id="explanation"></p>
       </div>
-
       <div class="share-controls">
         <button class="btn" onclick="saveResult()">📱 결과 저장</button>
         <button class="btn new-game-btn" onclick="newGame()">새로운 퍼즐</button>
@@ -311,7 +268,7 @@ button, .btn, .start-btn { pointer-events:auto }
       <div class="admin-tools" style="display:flex; gap:8px; margin:12px 0;">
         <button class="btn" id="btnExport" type="button">JSON 내보내기</button>
         <button class="btn" id="btnImport" type="button">JSON 가져오기</button>
-        <input type="file" id="fileImport" accept="application/json" hidden />
+        <input type="file" id="fileImport" accept="application/json" hidden>
       </div>
 
       <!-- 새 구절 추가 폼 -->
@@ -320,14 +277,14 @@ button, .btn, .start-btn { pointer-events:auto }
 
         <div class="form-group">
           <label class="form-label">구절 참조 (예: 마태복음 5:14-16)</label>
-          <input type="text" class="form-input" id="newReference" placeholder="성경책 장:절"/>
+          <input type="text" class="form-input" id="newReference" placeholder="성경책 장:절">
         </div>
 
         <div class="form-group">
           <label class="form-label">말씀 조각들</label>
           <div id="piecesContainer">
             <div class="piece-item">
-              <input type="text" class="form-input piece-input" placeholder="첫 번째 문장"/>
+              <input type="text" class="form-input piece-input" placeholder="첫 번째 문장">
               <button class="btn remove-piece-btn" onclick="removePiece(this)" type="button">삭제</button>
             </div>
           </div>
@@ -361,7 +318,7 @@ button, .btn, .start-btn { pointer-events:auto }
   <div class="password-modal hidden" id="passwordModal">
     <div class="password-modal-content">
       <h3 style="color:#8b6c53; margin-bottom:20px;">관리자 비밀번호</h3>
-      <input type="password" class="password-input" id="passwordInput" placeholder="비밀번호를 입력하세요"/>
+      <input type="password" class="password-input" id="passwordInput" placeholder="비밀번호를 입력하세요">
       <div>
         <button class="btn" onclick="checkPassword()" type="button">확인</button>
         <button class="btn back-btn" onclick="closePasswordModal()" type="button">취소</button>
@@ -370,7 +327,7 @@ button, .btn, .start-btn { pointer-events:auto }
   </div>
 
   <script>
-    // 기본 성경 구절 데이터
+    // === 기본 데이터 ===
     const defaultVerses = [
       {
         reference: "마태복음 5:14-16",
@@ -398,17 +355,15 @@ button, .btn, .start-btn { pointer-events:auto }
       }
     ];
 
-    // 상태
+    // === 상태 ===
     let currentVerse = null;
     let shuffledPieces = [];
     let hintUsed = false;
     let editingIndex = -1;
     let selectedPiece = null;
-
-    // 관리자 비밀번호
     const ADMIN_PASSWORD = "jesus2024";
 
-    // 저장/불러오기
+    // === 스토리지 ===
     function loadVerses(){
       const saved = localStorage.getItem('bibleVerses');
       if (saved) return JSON.parse(saved);
@@ -419,7 +374,7 @@ button, .btn, .start-btn { pointer-events:auto }
       localStorage.setItem('bibleVerses', JSON.stringify(verses));
     }
 
-    // 게임 플로우
+    // === 화면 전환 ===
     function startGame(){
       document.getElementById('homeScreen').style.display='none';
       document.getElementById('puzzleScreen').style.display='block';
@@ -432,48 +387,45 @@ button, .btn, .start-btn { pointer-events:auto }
       document.getElementById('homeScreen').style.display='block';
     }
 
+    // === 퍼즐 ===
     function loadRandomVerse(){
       const verses = loadVerses();
       if (verses.length===0){
         alert('등록된 구절이 없습니다. 관리자 화면에서 구절을 추가해주세요.');
-        goHome();
-        return;
+        goHome(); return;
       }
-      const randomIndex = Math.floor(Math.random()*verses.length);
-      currentVerse = verses[randomIndex];
+      const i = Math.floor(Math.random()*verses.length);
+      currentVerse = verses[i];
       document.getElementById('verseInfo').textContent = currentVerse.reference;
 
       shuffledPieces = [...currentVerse.pieces];
-      for (let i=shuffledPieces.length-1;i>0;i--){
-        const j = Math.floor(Math.random()*(i+1));
-        [shuffledPieces[i],shuffledPieces[j]]=[shuffledPieces[j],shuffledPieces[i]];
+      for (let j=shuffledPieces.length-1;j>0;j--){
+        const k = Math.floor(Math.random()*(j+1));
+        [shuffledPieces[j],shuffledPieces[k]]=[shuffledPieces[k],shuffledPieces[j]];
       }
       renderPuzzle();
       hintUsed=false; selectedPiece=null;
     }
 
     function renderPuzzle(){
-      const puzzleArea = document.getElementById('puzzleArea');
-      puzzleArea.innerHTML='';
-      shuffledPieces.forEach((piece,index)=>{
-        const el=document.createElement('div');
+      const area = document.getElementById('puzzleArea');
+      area.innerHTML='';
+      shuffledPieces.forEach((txt,idx)=>{
+        const el = document.createElement('div');
         el.className='puzzle-piece';
-        el.textContent=piece;
-        el.dataset.index=index;
+        el.textContent=txt;
+        el.dataset.index=idx;
         el.addEventListener('click',()=>handlePieceClick(el));
-        puzzleArea.appendChild(el);
+        area.appendChild(el);
       });
     }
 
-    function handlePieceClick(clicked){
-      if (!selectedPiece){
-        selectedPiece=clicked; clicked.classList.add('selected'); return;
-      }
-      if (selectedPiece===clicked){
-        clicked.classList.remove('selected'); selectedPiece=null; return;
-      }
-      const a = parseInt(selectedPiece.dataset.index,10);
-      const b = parseInt(clicked.dataset.index,10);
+    function handlePieceClick(el){
+      if (!selectedPiece){ selectedPiece=el; el.classList.add('selected'); return; }
+      if (selectedPiece===el){ el.classList.remove('selected'); selectedPiece=null; return; }
+
+      const a = +selectedPiece.dataset.index;
+      const b = +el.dataset.index;
       [shuffledPieces[a],shuffledPieces[b]]=[shuffledPieces[b],shuffledPieces[a]];
       selectedPiece.classList.remove('selected'); selectedPiece=null;
       renderPuzzle();
@@ -481,27 +433,25 @@ button, .btn, .start-btn { pointer-events:auto }
 
     function showHint(){
       if (hintUsed) return;
-      const firstPiece = currentVerse.pieces[0];
+      const first = currentVerse.pieces[0];
       document.querySelectorAll('.puzzle-piece').forEach(p=>{
-        if (p.textContent===firstPiece){
-          p.style.border='3px solid #ffc107';
-          p.style.background='#fff8dc';
-        }
+        if (p.textContent===first){ p.style.border='3px solid #ffc107'; p.style.background='#fff8dc'; }
       });
-      alert(`💡 힌트: 첫 번째 문장은 "${firstPiece}"입니다.`);
+      alert(`💡 힌트: 첫 번째 문장은 "${first}"입니다.`);
       hintUsed=true;
     }
 
     function checkAnswer(){
       const ok = shuffledPieces.every((p,i)=>p===currentVerse.pieces[i]);
-      if (ok) showResult(); else alert('아직 순서가 맞지 않아요! 다시 시도해보세요. 😊');
+      if (ok) showResult();
+      else alert('아직 순서가 맞지 않아요! 다시 시도해보세요. 😊');
     }
 
     function showResult(){
       document.getElementById('puzzleScreen').style.display='none';
       document.getElementById('resultScreen').style.display='block';
       document.getElementById('correctVerse').innerHTML =
-        `<strong>${currentVerse.reference}</strong><br/><br/>${currentVerse.pieces.join(' ')}`;
+        `<strong>${currentVerse.reference}</strong><br><br>${currentVerse.pieces.join(' ')}`;
       document.getElementById('explanation').textContent = currentVerse.explanation;
     }
 
@@ -521,19 +471,18 @@ button, .btn, .start-btn { pointer-events:auto }
 
     function saveResult(){
       const text = `${currentVerse.reference}\n\n${currentVerse.pieces.join(' ')}\n\n${currentVerse.explanation}`;
-      if (navigator.share){
-        navigator.share({title:'말씀 조각 맞추기 결과', text});
-      } else {
+      if (navigator.share){ navigator.share({title:'말씀 조각 맞추기 결과', text}); }
+      else {
         navigator.clipboard.writeText(text).then(()=>alert('결과가 클립보드에 복사되었습니다! 📋'))
-          .catch(()=>{
-            const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta);
-            ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
-            alert('결과가 클립보드에 복사되었습니다! 📋');
-          });
+        .catch(()=>{
+          const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta);
+          ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+          alert('결과가 클립보드에 복사되었습니다! 📋');
+        });
       }
     }
 
-    // 관리자
+    // === 관리자 ===
     function showPasswordModal(){
       document.getElementById('passwordModal').classList.remove('hidden');
       document.getElementById('passwordInput').focus();
@@ -557,7 +506,7 @@ button, .btn, .start-btn { pointer-events:auto }
       const verses = loadVerses();
       const container = document.getElementById('verseListContainer');
       if (verses.length===0){
-        container.innerHTML = '<p style="text-align:center;color:#999;">등록된 구절이 없습니다.</p>'; return;
+        container.innerHTML='<p style="text-align:center;color:#999;">등록된 구절이 없습니다.</p>'; return;
       }
       container.innerHTML = verses.map((v,i)=>`
         <div class="verse-item">
@@ -573,29 +522,29 @@ button, .btn, .start-btn { pointer-events:auto }
     }
 
     function addPiece(){
-      const container=document.getElementById('piecesContainer');
+      const c=document.getElementById('piecesContainer');
       const div=document.createElement('div');
       div.className='piece-item';
       div.innerHTML=`
-        <input type="text" class="form-input piece-input" placeholder="새로운 문장"/>
+        <input type="text" class="form-input piece-input" placeholder="새로운 문장">
         <button class="btn remove-piece-btn" onclick="removePiece(this)" type="button">삭제</button>
       `;
-      container.appendChild(div);
+      c.appendChild(div);
     }
 
     function removePiece(btn){
-      const container=document.getElementById('piecesContainer');
-      if (container.children.length>1) btn.parentElement.remove();
+      const c=document.getElementById('piecesContainer');
+      if (c.children.length>1) btn.parentElement.remove();
       else alert('최소 하나의 조각은 필요합니다.');
     }
 
     function clearForm(){
       document.getElementById('newReference').value='';
       document.getElementById('newExplanation').value='';
-      const container=document.getElementById('piecesContainer');
-      container.innerHTML=`
+      const c=document.getElementById('piecesContainer');
+      c.innerHTML=`
         <div class="piece-item">
-          <input type="text" class="form-input piece-input" placeholder="첫 번째 문장"/>
+          <input type="text" class="form-input piece-input" placeholder="첫 번째 문장">
           <button class="btn remove-piece-btn" onclick="removePiece(this)" type="button">삭제</button>
         </div>
       `;
@@ -606,107 +555,75 @@ button, .btn, .start-btn { pointer-events:auto }
       const reference = document.getElementById('newReference').value.trim();
       const explanation = document.getElementById('newExplanation').value.trim();
       const pieceInputs = document.querySelectorAll('.piece-input');
-
       if (!reference){ alert('구절 참조를 입력해주세요.'); return; }
       if (!explanation){ alert('설교 해설을 입력해주세요.'); return; }
 
-      const pieces=[];
-      pieceInputs.forEach(i=>{ const v=i.value.trim(); if (v) pieces.push(v); });
+      const pieces=[]; pieceInputs.forEach(i=>{ const v=i.value.trim(); if (v) pieces.push(v); });
       if (pieces.length<2){ alert('최소 2개 이상의 조각이 필요합니다.'); return; }
 
-      const newVerse = { reference, pieces, explanation };
-      const verses = loadVerses();
-
+      const newVerse={reference,pieces,explanation};
+      const verses=loadVerses();
       if (editingIndex>=0){ verses[editingIndex]=newVerse; alert('구절이 수정되었습니다! ✨'); }
       else { verses.push(newVerse); alert('새 구절이 추가되었습니다! 🎉'); }
-
-      saveVerses(verses);
-      renderVerseList();
-      clearForm();
+      saveVerses(verses); renderVerseList(); clearForm();
     }
 
     function editVerse(index){
-      const verses=loadVerses();
-      const verse=verses[index];
-      document.getElementById('newReference').value=verse.reference;
-      document.getElementById('newExplanation').value=verse.explanation;
+      const verses=loadVerses(); const v=verses[index];
+      document.getElementById('newReference').value=v.reference;
+      document.getElementById('newExplanation').value=v.explanation;
 
-      const container=document.getElementById('piecesContainer');
-      container.innerHTML='';
-      verse.pieces.forEach(p=>{
+      const c=document.getElementById('piecesContainer'); c.innerHTML='';
+      v.pieces.forEach(p=>{
         const div=document.createElement('div');
         div.className='piece-item';
         div.innerHTML=`
-          <input type="text" class="form-input piece-input" value="${p}"/>
+          <input type="text" class="form-input piece-input" value="${p}">
           <button class="btn remove-piece-btn" onclick="removePiece(this)" type="button">삭제</button>
         `;
-        container.appendChild(div);
+        c.appendChild(div);
       });
       editingIndex=index;
       document.querySelector('.admin-form').scrollIntoView({behavior:'smooth'});
     }
 
     function deleteVerse(index){
-      const verses=loadVerses();
-      const verse=verses[index];
-      if (confirm(\`"\${verse.reference}" 구절을 삭제하시겠습니까?\`)){
-        verses.splice(index,1);
-        saveVerses(verses);
-        renderVerseList();
-        alert('구절이 삭제되었습니다.');
+      const verses=loadVerses(); const v=verses[index];
+      if (confirm(`"${v.reference}" 구절을 삭제하시겠습니까?`)){
+        verses.splice(index,1); saveVerses(verses); renderVerseList(); alert('구절이 삭제되었습니다.');
       }
     }
 
-    // 비밀번호 엔터키
-    document.getElementById('passwordInput').addEventListener('keypress', (e)=>{
-      if (e.key==='Enter') checkPassword();
-    });
-
-    // 초기 로드: 기본값 세팅
+    // 초기 로드
     window.addEventListener('load', ()=>{
       if (!localStorage.getItem('bibleVerses')) saveVerses(defaultVerses);
     });
 
-    // Import/Export 바인딩
-    document.addEventListener('DOMContentLoaded', function () {
-      const btnExport = document.getElementById("btnExport");
-      const btnImport = document.getElementById("btnImport");
-      const fileInput = document.getElementById("fileImport");
-      if (!btnExport || !btnImport || !fileInput) return;
+    // Import/Export
+    document.addEventListener('DOMContentLoaded', ()=>{
+      const btnExport=document.getElementById('btnExport');
+      const btnImport=document.getElementById('btnImport');
+      const fileInput=document.getElementById('fileImport');
+      if (!btnExport||!btnImport||!fileInput) return;
 
-      // Export
-      btnExport.addEventListener("click", ()=>{
-        const verses = loadVerses();
-        const blob = new Blob([JSON.stringify(verses, null, 2)], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url; a.download = "biblepuzzle_verses.json";
-        document.body.appendChild(a); a.click(); a.remove();
-        URL.revokeObjectURL(url);
+      btnExport.addEventListener('click', ()=>{
+        const verses=loadVerses();
+        const blob=new Blob([JSON.stringify(verses,null,2)],{type:'application/json'});
+        const url=URL.createObjectURL(blob);
+        const a=document.createElement('a'); a.href=url; a.download='biblepuzzle_verses.json';
+        document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
       });
 
-      // Import
-      btnImport.addEventListener("click", ()=> fileInput.click());
-      fileInput.addEventListener("change", async (e)=>{
-        const file = e.target.files?.[0];
-        if (!file) return;
+      btnImport.addEventListener('click', ()=>fileInput.click());
+      fileInput.addEventListener('change', async (e)=>{
+        const file=e.target.files?.[0]; if(!file) return;
         try{
-          const text = await file.text();
-          const data = JSON.parse(text);
-          if (!Array.isArray(data)) throw new Error("최상위가 배열이어야 합니다.");
-          for (const v of data){
-            if (!v?.reference || !Array.isArray(v?.pieces)) {
-              throw new Error("각 항목에 reference와 pieces(배열)가 필요합니다.");
-            }
-          }
-          saveVerses(data);
-          renderVerseList();
-          alert("가져오기 완료!");
-        }catch(err){
-          alert("가져오기 실패: " + err.message);
-        }finally{
-          e.target.value = "";
-        }
+          const text=await file.text(); const data=JSON.parse(text);
+          if(!Array.isArray(data)) throw new Error('최상위가 배열이어야 합니다.');
+          for(const v of data){ if(!v?.reference || !Array.isArray(v?.pieces)) throw new Error('각 항목에 reference와 pieces(배열)가 필요합니다.'); }
+          saveVerses(data); renderVerseList(); alert('가져오기 완료!');
+        }catch(err){ alert('가져오기 실패: '+err.message); }
+        finally{ e.target.value=''; }
       });
     });
   </script>
