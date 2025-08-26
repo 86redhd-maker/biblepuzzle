@@ -142,6 +142,134 @@
     h1, h2, h3 {
       font-weight: 700;
     }
+    /* === Pastel Kids Skin — drop-in override (CSS only) === */
+/* 폰트는 SUIT 유지. 더 동글하게 하고 싶으면 h1~h3,.btn 에 NanumSquareRound를 나중에 얹어도 OK */
+
+:root{
+  --sky1:#cfe8ff; --sky2:#eaf6ff;
+  --ink:#22324a; --sub:#5b6b7a; --edge:rgba(34,50,74,.12);
+  --chip1:#BFE3FF; /* 하늘 */
+  --chip2:#FFD1E5; /* 핑크 */
+  --chip3:#FFF0A6; /* 옐로우 */
+  --chip4:#CCF3D2; /* 민트 */
+  --chip5:#E2D6FF; /* 라벤더 */
+}
+
+/* 1) 전체 배경: 하늘 그라데이션 + 구름/별/퍼즐 데코 */
+body{
+  background: linear-gradient(180deg,var(--sky1),var(--sky2));
+  color:var(--ink);
+}
+body::before{
+  content:"";
+  position:fixed; inset:0; pointer-events:none; z-index:0;
+  /* ▶ 구름/별/퍼즐 SVG를 여러 레이어로 배치 */
+  background-image:
+    /* 구름 */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='70' viewBox='0 0 140 70'><path fill='%23ffffff' fill-opacity='.9' d='M30 55h80a22 22 0 0 0 0-44c-7 0-13 3-17 8A30 30 0 0 0 30 33a18 18 0 1 0 0 22z'/></svg>"),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='110' height='55' viewBox='0 0 110 55'><path fill='%23ffffff' fill-opacity='.85' d='M22 45h66a18 18 0 0 0 0-36c-6 0-10 3-13 6A24 24 0 0 0 22 26a15 15 0 1 0 0 19z'/></svg>"),
+    /* 별 */
+    url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 18 18'><path fill='%23ffe37a' d='M9 0l2 5 5 2-5 2-2 5-2-5-5-2 5-2z'/></svg>\"),
+    /* 퍼즐 조각(노랑) */
+    url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='84' height='84' viewBox='0 0 84 84'><path fill='%23ffd96b' d='M30 8a8 8 0 1 0 16 0h10c8 0 14 6 14 14v6a8 8 0 1 0 0 16v8c0 8-6 14-14 14H46a8 8 0 1 0-16 0H20c-8 0-14-6-14-14V44a8 8 0 1 0 0-16v-6C6 14 12 8 20 8h10z'/></svg>\"),
+    /* 퍼즐 조각(핑크) */
+    url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='84' height='84' viewBox='0 0 84 84'><path fill='%23ffb3c7' d='M30 8a8 8 0 1 0 16 0h10c8 0 14 6 14 14v6a8 8 0 1 0 0 16v8c0 8-6 14-14 14H46a8 8 0 1 0-16 0H20c-8 0-14-6-14-14V44a8 8 0 1 0 0-16v-6C6 14 12 8 20 8h10z'/></svg>\");
+  background-repeat:no-repeat, no-repeat, repeat, no-repeat, no-repeat;
+  background-size: 260px 130px, 200px 100px, 18px 18px, 84px 84px, 84px 84px;
+  background-position:
+    8% 18%, 78% 8%, center 28%, 90% 78%, 10% 82%;
+  opacity:.95;
+}
+.container{ position:relative; z-index:1; border-radius:26px; box-shadow:0 20px 60px rgba(17,24,39,.16) }
+
+/* 2) 홈(히어로): 투명 카드 + 톡톡 튀는 버튼 */
+.home-screen{
+  background: rgba(255,255,255,.72);
+  backdrop-filter: blur(6px) saturate(115%);
+  color:var(--ink);
+}
+.home-screen h1{ font-weight:900; letter-spacing:.4px }
+.home-screen p{ color:var(--sub) }
+.start-btn{
+  border:1px solid var(--edge);
+  background: radial-gradient(120% 100% at 50% -10%, rgba(255,255,255,.7), transparent 40%), linear-gradient(#fff,#f7f7f7);
+  color:#0f2a5a; font-weight:900;
+  box-shadow:0 10px 24px rgba(34,50,74,.18);
+}
+
+/* 3) 안내 박스 */
+.instruction{
+  background: linear-gradient(180deg,#eef6ff,#eaf2ff);
+  border:1px solid rgba(110,168,254,.35);
+  color:#0f3a75; border-radius:14px; padding:14px 16px; font-weight:800;
+}
+
+/* 4) 퍼즐 영역: 반응형 그리드 + 캔디 칩 */
+.puzzle-area{
+  display:grid; gap:12px;
+  grid-template-columns: repeat(auto-fit, minmax(170px,1fr));
+  background: linear-gradient(180deg,#fbfdff,#f5f8fe);
+  border:1px solid var(--edge); border-radius:16px; padding:18px;
+}
+.puzzle-piece{
+  border:none; border-radius:14px; padding:14px 16px;
+  font-weight:900; line-height:1.4; color:#253551;
+  box-shadow:0 10px 22px rgba(34,50,74,.10);
+  transition: transform .12s ease, box-shadow .12s ease, filter .12s ease;
+}
+.puzzle-piece:hover{ transform:translateY(-2px); box-shadow:0 16px 28px rgba(34,50,74,.14) }
+.puzzle-piece:active{ transform:scale(.985) }
+.puzzle-piece.selected{
+  outline:3px solid rgba(110,168,254,.55);
+  filter:saturate(110%);
+}
+/* 색상 순환 */
+.puzzle-piece:nth-child(5n+1){ background:var(--chip1) }
+.puzzle-piece:nth-child(5n+2){ background:var(--chip2) }
+.puzzle-piece:nth-child(5n+3){ background:var(--chip3) }
+.puzzle-piece:nth-child(5n+4){ background:var(--chip4) }
+.puzzle-piece:nth-child(5n){   background:var(--chip5) }
+
+/* 5) 버튼(공통) */
+.btn{
+  border:1px solid var(--edge);
+  background: radial-gradient(120% 100% at 50% -10%, rgba(255,255,255,.65), transparent 40%), linear-gradient(#fff,#f7f7f7);
+  color:#1f2d40; font-weight:800; min-height:44px;
+  box-shadow:0 6px 18px rgba(31,41,55,.12);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.btn:hover{ transform: translateY(-1px) scale(1.01) }
+.btn:active{ transform: translateY(0) scale(.99) }
+.hint-btn{
+  background: linear-gradient(#eaf4ff,#e2f0ff);
+  border-color: rgba(110,168,254,.45);
+  color:#0f3a75;
+}
+.back-btn{ background:linear-gradient(#f6f6f6,#eeeeee) }
+
+/* 6) 결과/관리자 카드 톤 */
+.correct-verse{
+  background: linear-gradient(180deg,#fcfffb,#f7fff7);
+  border:1px solid rgba(101,193,140,.45);
+  border-radius:18px; box-shadow:0 12px 30px rgba(31,41,55,.10);
+  font-weight:800;
+}
+.explanation{
+  background: linear-gradient(180deg,#fff9e6,#fff4d6);
+  border-left:4px solid #f0c443; border-radius:10px; font-weight:800;
+}
+.verse-item{ background:linear-gradient(180deg,#f9fafb,#f7f7f7); border:1px solid var(--edge) }
+.verse-reference{ font-weight:900; letter-spacing:.2px; color:#8b6c53 }
+.verse-pieces{ font-weight:800; color:var(--ink) }
+.verse-explanation{ color:var(--sub) }
+
+/* 7) 접근성 */
+:focus-visible{ outline:3px solid rgba(110,168,254,.6); outline-offset:2px; border-radius:10px }
+
+/* 8) 모바일 */
+@media (max-width:768px){
+  .puzzle-area{ grid-template-columns: repeat(auto-fit, minmax(140px,1fr)) }
+}
   </style>
 </head>
 <body>
