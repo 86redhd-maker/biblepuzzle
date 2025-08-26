@@ -270,6 +270,176 @@ body::before{
 @media (max-width:768px){
   .puzzle-area{ grid-template-columns: repeat(auto-fit, minmax(140px,1fr)) }
 }
+    /* === Cute Pastel Hero Layout Overhaul (HTML 수정 없이 레이아웃 체감 업) === */
+
+/* 0) 베이스: 컨테이너를 투명화하고 섹션별 카드/히어로는 각자 구성 */
+.container{
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  max-width: 980px;
+}
+
+/* 1) 홈 히어로를 “전체 섹션”로 키우고 중앙 배치 */
+.home-screen{
+  position: relative;
+  min-height: 64vh;            /* 시안처럼 큼직하게 */
+  display: grid;
+  place-items: center;
+  padding: 56px 28px;
+  background: none;            /* 기존 그라데이션 제거 */
+  color: #22324a;
+  z-index: 1;
+}
+/* 유리 카드(시안의 큰 카드) – pseudo로 생성 */
+.home-screen::before{
+  content:"";
+  position: absolute; inset: 24px;
+  border-radius: 28px;
+  background: linear-gradient(180deg, rgba(255,255,255,.78), rgba(255,255,255,.92));
+  border: 1px solid rgba(255,255,255,.8);
+  box-shadow: 0 28px 80px rgba(17,24,39,.18);
+  z-index: -1;
+  backdrop-filter: blur(6px) saturate(120%);
+}
+/* 떠다니는 구름/퍼즐/별 데코 (히어로 주변) */
+.home-screen::after{
+  content:"";
+  position: absolute; inset: 0; pointer-events: none; z-index: -2;
+  background-image:
+    /* 큰 구름 */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='120' viewBox='0 0 260 120'><path fill='%23ffffff' fill-opacity='.9' d='M50 95h160a44 44 0 1 0-30-76 60 60 0 0 0-98 28 30 30 0 1 0-32 48z'/></svg>"),
+    /* 작은 구름 */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='90' viewBox='0 0 180 90'><path fill='%23ffffff' fill-opacity='.9' d='M36 74h108a28 28 0 1 0-20-48 48 48 0 0 0-66 24 22 22 0 1 0-22 24z'/></svg>"),
+    /* 별 */
+    url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 18 18'><path fill='%23ffe37a' d='M9 0l2 5 5 2-5 2-2 5-2-5-5-2 5-2z'/></svg>\"),
+    /* 퍼즐 조각(노랑/핑크) */
+    url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='84' height='84' viewBox='0 0 84 84'><path fill='%23ffd96b' d='M30 8a8 8 0 1 0 16 0h10c8 0 14 6 14 14v6a8 8 0 1 0 0 16v8c0 8-6 14-14 14H46a8 8 0 1 0-16 0H20c-8 0-14-6-14-14V44a8 8 0 1 0 0-16v-6C6 14 12 8 20 8h10z'/></svg>\"),
+    url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='84' height='84' viewBox='0 0 84 84'><path fill='%23ffb3c7' d='M30 8a8 8 0 1 0 16 0h10c8 0 14 6 14 14v6a8 8 0 1 0 0 16v8c0 8-6 14-14 14H46a8 8 0 1 0-16 0H20c-8 0-14-6-14-14V44a8 8 0 1 0 0-16v-6C6 14 12 8 20 8h10z'/></svg>\");
+  background-repeat: no-repeat, no-repeat, repeat, no-repeat, no-repeat;
+  background-size: 260px 120px, 180px 90px, 18px 18px, 84px 84px, 84px 84px;
+  background-position: 8% 22%, 82% 8%, center 30%, 88% 82%, 12% 78%;
+  opacity: .96;
+}
+/* 히어로 타이틀/설명을 시안처럼 굵고 큼직하게 */
+.home-screen h1{
+  font-size: clamp(28px, 5vw, 42px);
+  font-weight: 900;
+  letter-spacing: .2px;
+  margin-bottom: 8px;
+  position: relative;
+}
+/* 이모지 배지(시안 느낌) */
+.home-screen h1::before{
+  content: "🧩";
+  display: inline-block;
+  margin-right: .35em;
+  filter: drop-shadow(0 3px 6px rgba(0,0,0,.15));
+}
+.home-screen p{
+  font-size: clamp(15px, 2.2vw, 18px);
+  color: #5b6b7a;
+  margin-bottom: 22px;
+}
+/* 스타트 버튼을 더 크고 통통하게 */
+.start-btn{
+  padding: 14px 28px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 1.06rem;
+  border: 1px solid rgba(34,50,74,.12);
+  background:
+    radial-gradient(120% 100% at 50% -10%, rgba(255,255,255,.75), transparent 40%),
+    linear-gradient(#fff,#f7f7f7);
+  color:#0f2a5a;
+  box-shadow: 0 12px 28px rgba(34,50,74,.18);
+}
+
+/* 2) 퍼즐 화면도 “카드 섹션”처럼 보이도록 */
+.puzzle-screen{
+  position: relative;
+  display: block;
+  padding: 28px 28px 36px;
+}
+.puzzle-screen::before{
+  content:"";
+  position:absolute; inset: 10px;
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(255,255,255,.78), rgba(255,255,255,.92));
+  border: 1px solid rgba(255,255,255,.8);
+  box-shadow: 0 20px 60px rgba(17,24,39,.14);
+  z-index: -1;
+  backdrop-filter: blur(4px) saturate(115%);
+}
+
+/* 3) 칩형 퍼즐 그리드 + 파스텔 조각 */
+.puzzle-area{
+  display: grid; gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  background: linear-gradient(180deg,#fbfdff,#f5f8fe);
+  border: 1px solid rgba(34,50,74,.10);
+  border-radius: 16px; padding: 18px;
+}
+.puzzle-piece{
+  border: none; border-radius: 14px; padding: 14px 16px;
+  font-weight: 900; line-height: 1.4; color:#253551;
+  box-shadow: 0 10px 22px rgba(34,50,74,.10);
+  transition: transform .12s ease, box-shadow .12s ease, filter .12s ease;
+}
+.puzzle-piece:hover{ transform: translateY(-2px); box-shadow: 0 16px 28px rgba(34,50,74,.14) }
+.puzzle-piece:active{ transform: scale(.985) }
+.puzzle-piece.selected{ outline: 3px solid rgba(110,168,254,.55); filter: saturate(110%) }
+/* 파스텔 랜덤처럼 보이게 순환 컬러 */
+.puzzle-piece:nth-child(5n+1){ background:#BFE3FF }
+.puzzle-piece:nth-child(5n+2){ background:#FFD1E5 }
+.puzzle-piece:nth-child(5n+3){ background:#FFF0A6 }
+.puzzle-piece:nth-child(5n+4){ background:#CCF3D2 }
+.puzzle-piece:nth-child(5n){   background:#E2D6FF }
+
+/* 4) 컨트롤 버튼 군집도 시안처럼 통통하게 */
+.controls{ gap: 10px; justify-content: center }
+.btn{
+  border:1px solid rgba(34,50,74,.12);
+  background:
+    radial-gradient(120% 100% at 50% -10%, rgba(255,255,255,.65), transparent 40%),
+    linear-gradient(#fff,#f7f7f7);
+  color:#1f2d40; font-weight: 800; min-height: 44px;
+  box-shadow: 0 6px 18px rgba(31,41,55,.12);
+}
+.hint-btn{
+  background: linear-gradient(#eaf4ff,#e2f0ff);
+  border-color: rgba(110,168,254,.45);
+  color:#0f3a75;
+}
+.back-btn{ background: linear-gradient(#f6f6f6,#eeeeee) }
+
+/* 5) 결과 카드/관리자 카드도 새 톤 */
+.result-screen{ position:relative; padding: 28px; text-align:center }
+.result-screen::before{
+  content:""; position:absolute; inset: 10px; z-index:-1;
+  border-radius: 22px; background: linear-gradient(180deg, rgba(255,255,255,.78), rgba(255,255,255,.92));
+  border:1px solid rgba(255,255,255,.8); box-shadow: 0 20px 60px rgba(17,24,39,.14);
+  backdrop-filter: blur(4px) saturate(115%);
+}
+.result-title{ font-size: clamp(22px,3.4vw,28px); color:#2a7d52; font-weight: 900 }
+
+.correct-verse{
+  background: linear-gradient(180deg,#fcfffb,#f7fff7);
+  border:1px solid rgba(101,193,140,.45);
+  border-radius:18px; box-shadow:0 12px 30px rgba(31,41,55,.10);
+  font-weight:800;
+}
+
+.explanation{
+  background: linear-gradient(180deg,#fff9e6,#fff4d6);
+  border-left:4px solid #f0c443; border-radius:10px; font-weight:800;
+}
+
+/* 6) 모바일 보완 */
+@media (max-width: 768px){
+  .home-screen{ min-height: 58vh; padding: 40px 18px }
+  .puzzle-area{ grid-template-columns: repeat(auto-fit, minmax(140px,1fr)) }
+}
   </style>
 </head>
 <body>
