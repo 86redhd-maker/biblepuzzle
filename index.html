@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>말씀 조각 맞추기</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600&display=swap');
+
+```
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    
+    body {
+        font-family: 'Noto Serif KR', serif;
+        background: linear-gradient(135deg, #f5f1e8 0%, #e8dcc0 100%);
+        min-height: 100vh;
+        padding: 20px;
+    }
+    
+    .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: #fff;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(139, 108, 83, 0.2);
+        overflow: hidden;
+        min-height: 80vh;
+    }
+    
+    /* 홈 화면 */
+    .home-screen {
+        padding: 60px 40px;
+        text-align: center;
+        background: linear-gradient(135deg, #8b6c53 0%, #a67c60 100%);
+        color: white;
+        position: relative;
+    }
+    
+    .admin-link {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(255,255,255,0.2);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.3);
+        padding: 8px 15px;
+        border-radius: 20px;
+        text-decoration: none;
+        font-size: 0.9em;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .admin-link:hover {
+        background: rgba(255,255,255,0.3);
+    }
+    
+    .home-screen h1 {
+        font-size: 2.2em;
+        margin-bottom: 20px;
+        font-weight: 600;
+    }
+    
+    .home-screen p {
+        font-size: 1.1em;
+        margin-bottom: 40px;
+        opacity: 0.9;
+        line-height: 1.6;
+    }
+    
+    .start-btn {
+        background: #fff;
+        color: #8b6c53;
+        border: none;
+        padding: 15px 40px;
+        font-size: 1.2em;
+        border-radius: 50px;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+        font-weight: 600;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    
+    .start-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+    
+    /* 퍼즐 화면 */
+    .puzzle-screen {
+        display: none;
+        padding: 30px;
+    }
+    
+    .puzzle-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    
+    .puzzle-header h2 {
+        color: #8b6c53;
+        font-size: 1.5em;
+        margin-bottom: 10px;
+    }
+    
+    .verse-info {
+        background: #f8f6f0;
+        padding: 10px 20px;
+        border-radius: 25px;
+        color: #8b6c53;
+        font-weight: 600;
+        display: inline-block;
+    }
+    
+    .puzzle-area {
+        background: #f8f6f0;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 30px;
+        min-height: 300px;
+    }
+    
+    .puzzle-piece {
+        background: white;
+        border: 2px solid #e8dcc0;
+        border-radius: 10px;
+        padding: 15px 20px;
+        margin: 8px 0;
+        cursor: grab;
+        transition: all 0.3s ease;
+        box-shadow: 0 3px 10px rgba(139, 108, 83, 0.1);
+        font-size: 1.05em;
+        line-height: 1.4;
+    }
+    
+    .puzzle-piece:hover {
+        border-color: #8b6c53;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(139, 108, 83, 0.2);
+    }
+    
+    .puzzle-piece.dragging {
+        opacity: 0.7;
+        transform: rotate(5deg);
+        cursor: grabbing;
+    }
+    
+    .puzzle-piece.correct {
+        border-color: #28a745;
+        background: #f8fff8;
+    }
+    
+    .controls {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .btn {
+        background: #8b6c53;
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+    
+    .btn:hover {
+        background: #a67c60;
+        transform: translateY(-2px);
+    }
+    
+    .btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .hint-btn {
+        background: #17a2b8;
+    }
+    
+    .hint-btn:hover {
+        background: #138496;
+    }
+    
+    /* 결과 화면 */
+    .result-screen {
+        display: none;
+        padding: 30px;
+        text-align: center;
+    }
+    
+    .result-title {
+        font-size: 1.8em;
+        color: #28a745;
+        margin-bottom: 20px;
+    }
+    
+    .correct-verse {
+        background: #f8fff8;
+        border: 2px solid #28a745;
+        border-radius: 15px;
+        padding: 25px;
+        margin: 20px 0;
+        font-size: 1.15em;
+        line-height: 1.6;
+        color: #333;
+    }
+    
+    .explanation {
+        background: #fff8dc;
+        border-left: 4px solid #8b6c53;
+        padding: 20px;
+        margin: 20px 0;
+        text-align: left;
+        border-radius: 0 10px 10px 0;
+    }
+    
+    .explanation h4 {
+        color: #8b6c53;
+        margin-bottom: 10px;
+    }
+    
+    .share-controls {
+        margin-top: 30px;
+    }
+    
+    .new-game-btn {
+        background: #8b6c53;
+        margin-top: 15px;
+    }
+    
+    /* 관리자 화면 */
+    .admin-screen {
+        display: none;
+        padding: 30px;
+    }
+    
+    .admin-header {
+        text-align: center;
+        margin-bottom: 30px;
+        color: #8b6c53;
+    }
+    
+    .verse-list {
+        margin-bottom: 30px;
+    }
+    
+    .verse-item {
+        background: #f8f6f0;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 15px;
+        border-left: 4px solid #8b6c53;
+    }
+    
+    .verse-reference {
+        font-weight: 600;
+        color: #8b6c53;
+        margin-bottom: 10px;
+    }
+    
+    .verse-pieces {
+        margin-bottom: 10px;
+        line-height: 1.5;
+    }
+    
+    .verse-explanation {
+        font-size: 0.9em;
+        color: #666;
+        font-style: italic;
+    }
+    
+    .verse-actions {
+        margin-top: 10px;
+    }
+    
+    .edit-btn {
+        background: #17a2b8;
+        font-size: 0.9em;
+        padding: 8px 15px;
+        margin-right: 10px;
+    }
+    
+    .delete-btn {
+        background: #dc3545;
+        font-size: 0.9em;
+        padding: 8px 15px;
+    }
+    
+    .admin-form {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 5px 15px rgba(139, 108, 83, 0.1);
+        margin-bottom: 20px;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-label {
+        display: block;
+        color: #8b6c53;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+    
+    .form-input {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e8dcc0;
+        border-radius: 8px;
+        font-family: inherit;
+        transition: border-color 0.3s ease;
+    }
+    
+    .form-input:focus {
+        outline: none;
+        border-color: #8b6c53;
+    }
+    
+    .form-textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+    
+    .pieces-input {
+        margin-bottom: 10px;
+    }
+    
+    .add-piece-btn {
+        background: #28a745;
+        font-size: 0.9em;
+        padding: 8px 15px;
+    }
+    
+    .piece-item {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+        align-items: center;
+    }
+    
+    .piece-input {
+        flex: 1;
+    }
+    
+    .remove-piece-btn {
+        background: #dc3545;
+        font-size: 0.8em;
+        padding: 5px 10px;
+    }
+    
+    .back-btn {
+        background: #6c757d;
+    }
+    
+    /* 모바일 최적화 */
+    @media (max-width: 768px) {
+        .container {
+            margin: 10px;
+            border-radius: 10px;
+        }
+        
+        .home-screen {
+            padding: 40px 20px;
+        }
+        
+        .home-screen h1 {
+            font-size: 1.8em;
+        }
+        
+        .puzzle-screen, .result-screen, .admin-screen {
+            padding: 20px;
+        }
+        
+        .puzzle-piece {
+            padding: 12px 15px;
+            font-size: 1em;
+        }
+        
+        .controls {
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .admin-link {
+            position: static;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+    }
+    
+    .hidden {
+        display: none !important;
+    }
+    
+    .password-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+    
+    .password-modal-content {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        text-align: center;
+        max-width: 400px;
+        width: 90%;
+    }
+    
+    .password-input {
+        width: 100%;
+        padding: 12px;
+        margin: 20px 0;
+        border: 2px solid #e8dcc0;
+        border-radius: 8px;
+        text-align: center;
+        font-size: 1.1em;
+    }
+</style>
+```
+
+</head>
+<body>
+    <div class="container">
+        <!-- 홈 화면 -->
+        <div class="home-screen" id="homeScreen">
+            <button class="admin-link" onclick="showPasswordModal()">⚙️ 관리자</button>
+            <h1>🧩 말씀 조각 맞추기</h1>
+            <p>성경 구절의 순서를 맞춰보세요!<br>
+            말씀의 흐름을 느끼며 더 깊이 묵상해보아요.</p>
+            <button class="start-btn" onclick="startGame()">시작하기</button>
+        </div>
+
+```
+    <!-- 퍼즐 화면 -->
+    <div class="puzzle-screen" id="puzzleScreen">
+        <div class="puzzle-header">
+            <h2>말씀 조각을 순서대로 배열해보세요</h2>
+            <div class="verse-info" id="verseInfo">마태복음 5:14-16</div>
+        </div>
+        
+        <div class="puzzle-area" id="puzzleArea"></div>
+        
+        <div class="controls">
+            <button class="btn hint-btn" onclick="showHint()">💡 힌트</button>
+            <button class="btn" onclick="checkAnswer()">정답 확인</button>
+            <button class="btn" onclick="resetPuzzle()">다시 섞기</button>
+            <button class="btn back-btn" onclick="goHome()">🏠 홈</button>
+        </div>
+    </div>
+    
+    <!-- 결과 화면 -->
+    <div class="result-screen" id="resultScreen">
+        <h2 class="result-title">🎉 정답입니다!</h2>
+        
+        <div class="correct-verse" id="correctVerse"></div>
+        
+        <div class="explanation">
+            <h4>📖 말씀 묵상</h4>
+            <p id="explanation"></p>
+        </div>
+        
+        <div class="share-controls">
+            <button class="btn" onclick="saveResult()">📱 결과 저장</button>
+            <button class="btn new-game-btn" onclick="newGame()">새로운 퍼즐</button>
+            <button class="btn back-btn" onclick="goHome()">🏠 홈</button>
+        </div>
+    </div>
+    
+    <!-- 관리자 화면 -->
+    <div class="admin-screen" id="adminScreen">
+        <div class="admin-header">
+            <h2>⚙️ 구절 관리</h2>
+            <p>성경 구절을 추가하거나 수정할 수 있습니다</p>
+        </div>
+        
+        <!-- 새 구절 추가 폼 -->
+        <div class="admin-form">
+            <h3 style="color: #8b6c53; margin-bottom: 20px;">새 구절 추가</h3>
+            
+            <div class="form-group">
+                <label class="form-label">구절 참조 (예: 마태복음 5:14-16)</label>
+                <input type="text" class="form-input" id="newReference" placeholder="성경책 장:절">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">말씀 조각들</label>
+                <div id="piecesContainer">
+                    <div class="piece-item">
+                        <input type="text" class="form-input piece-input" placeholder="첫 번째 문장">
+                        <button class="btn remove-piece-btn" onclick="removePiece(this)">삭제</button>
+                    </div>
+                </div>
+                <button class="btn add-piece-btn" onclick="addPiece()">+ 조각 추가</button>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">설교 해설</label>
+                <textarea class="form-input form-textarea" id="newExplanation" placeholder="이 말씀의 의미와 교훈을 입력하세요"></textarea>
+            </div>
+            
+            <div style="text-align: center;">
+                <button class="btn" onclick="saveVerse()">💾 저장하기</button>
+                <button class="btn" onclick="clearForm()">🔄 초기화</button>
+            </div>
+        </div>
+        
+        <!-- 기존 구절 목록 -->
+        <div class="verse-list">
+            <h3 style="color: #8b6c53; margin-bottom: 20px;">등록된 구절들</h3>
+            <div id="verseListContainer"></div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px;">
+            <button class="btn back-btn" onclick="goHome()">🏠 홈으로 돌아가기</button>
+        </div>
+    </div>
+</div>
+
+<!-- 비밀번호 모달 -->
+<div class="password-modal hidden" id="passwordModal">
+    <div class="password-modal-content">
+        <h3 style="color: #8b6c53; margin-bottom: 20px;">관리자 비밀번호</h3>
+        <input type="password" class="password-input" id="passwordInput" placeholder="비밀번호를 입력하세요">
+        <div>
+            <button class="btn" onclick="checkPassword()">확인</button>
+            <button class="btn back-btn" onclick="closePasswordModal()">취소</button>
+        </div>
+    </div>
+</div>
+
+<script>
+        // 기본 성경 구절 데이터
+        const defaultVerses = [
+            {
+                reference: "마태복음 5:14-16",
+                pieces: [
+                    "너희는 세상의 빛이라",
+                    "산 위에 있는 동네가 숨겨지지 못할 것이요",
+                    "사람이 등불을 켜서 말 아래에 두지 아니하고",
+                    "등경 위에 두나니",
+                    "이같이 너희 빛이 사람 앞에 비치게 하여",
+                    "그들로 너희 착한 행실을 보고",
+                    "하늘에 계신 너희 아버지께 영광을 돌리게 하라"
+                ],
+                explanation: "이 말씀은 그리스도인들이 세상에서 빛의 역할을 감당해야 함을 교훈합니다. 우리의 착한 행실과 삶을 통해 하나님의 영광을 드러내야 한다는 의미입니다."
+            },
+            {
+                reference: "요한복음 3:16",
+                pieces: [
+                    "하나님이 세상을 이처럼 사랑하사",
+                    "독생자를 주셨으니",
+                    "이는 그를 믿는 자마다",
+                    "멸망하지 않고",
+                    "영생을 얻게 하려 하심이라"
+                ],
+                explanation: "성경에서 가장 사랑받는 구절 중 하나로, 하나님의 무조건적인 사랑과 구원의 은혜를 보여주는 말씀입니다."
+            }
+        ];
+        
+        // 변수들
+        let currentVerse = null;
+        let shuffledPieces = [];
+        let userOrder = [];
+        let hintUsed = false;
+        let editingIndex = -1; // 수정 중인 구절 인덱스
+        
+        // 관리자 비밀번호 (원하는 비밀번호로 변경하세요)
+        const ADMIN_PASSWORD = "jesus2024";
+        
+        // 브라우저 저장소에서 구절 데이터 로드
+        function loadVerses() {
+            const saved = localStorage.getItem('bibleVerses');
+            if (saved) {
+                return JSON.parse(saved);
+            } else {
+                // 기본 데이터 저장
+                saveVerses(defaultVerses);
+                return defaultVerses;
+            }
+        }
+        
+        // 브라우저 저장소에 구절 데이터 저장
+        function saveVerses(verses) {
+            localStorage.setItem('bibleVerses', JSON.stringify(verses));
+        }
+        
+        // 게임 시작
+        function startGame() {
+            document.getElementById('homeScreen').style.display = 'none';
+            document.getElementById('puzzleScreen').style.display = 'block';
+            loadRandomVerse();
+        }
+        
+        // 홈으로 이동
+        function goHome() {
+            document.getElementById('puzzleScreen').style.display = 'none';
+            document.getElementById('resultScreen').style.display = 'none';
+            document.getElementById('adminScreen').style.display = 'none';
+            document.getElementById('homeScreen').style.display = 'block';
+        }
+        
+        // 랜덤 구절 로드
+        function loadRandomVerse() {
+            const verses = loadVerses();
+            if (verses.length === 0) {
+                alert('등록된 구절이 없습니다. 관리자 화면에서 구절을 추가해주세요.');
+                goHome();
+                return;
+            }
+            
+            const randomIndex = Math.floor(Math.random() * verses.length);
+            currentVerse = verses[randomIndex];
+            
+            document.getElementById('verseInfo').textContent = currentVerse.reference;
+            
+            // 조각들 섞기
+            shuffledPieces = [...currentVerse.pieces];
+            for (let i = shuffledPieces.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledPieces[i], shuffledPieces[j]] = [shuffledPieces[j], shuffledPieces[i]];
+            }
+            
+            renderPuzzle();
+            hintUsed = false;
+        }
+        
+        // 퍼즐 렌더링
+        function renderPuzzle() {
+            const puzzleArea = document.getElementById('puzzleArea');
+            puzzleArea.innerHTML = '';
+            
+            shuffledPieces.forEach((piece, index) => {
+                const pieceElement = document.createElement('div');
+                pieceElement.className = 'puzzle-piece';
+                pieceElement.textContent = piece;
+                pieceElement.draggable = true;
+                pieceElement.dataset.index = index;
+                
+                // 드래그 이벤트
+                pieceElement.addEventListener('dragstart', handleDragStart);
+                pieceElement.addEventListener('dragover', handleDragOver);
+                pieceElement.addEventListener('drop', handleDrop);
+                pieceElement.addEventListener('dragend', handleDragEnd);
+                
+                puzzleArea.appendChild(pieceElement);
+            });
+        }
+        
+        let draggedElement = null;
+        
+        function handleDragStart(e) {
+            draggedElement = e.target;
+            e.target.classList.add('dragging');
+        }
+        
+        function handleDragOver(e) {
+            e.preventDefault();
+        }
+        
+        function handleDrop(e) {
+            e.preventDefault();
+            if (draggedElement !== e.target) {
+                // 두 요소의 위치 교체
+                const draggedIndex = parseInt(draggedElement.dataset.index);
+                const targetIndex = parseInt(e.target.dataset.index);
+                
+                [shuffledPieces[draggedIndex], shuffledPieces[targetIndex]] = 
+                [shuffledPieces[targetIndex], shuffledPieces[draggedIndex]];
+                
+                renderPuzzle();
+            }
+        }
+        
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+        }
+        
+        // 힌트 보기
+        function showHint() {
+            if (hintUsed) return;
+            
+            const firstPiece = currentVerse.pieces[0];
+            const pieces = document.querySelectorAll('.puzzle-piece');
+            
+            pieces.forEach(piece => {
+                if (piece.textContent === firstPiece) {
+                    piece.style.border = '3px solid #ffc107';
+                    piece.style.background = '#fff8dc';
+                }
+            });
+            
+            alert(`💡 힌트: 첫 번째 문장은 "${firstPiece}"입니다.`);
+            hintUsed = true;
+        }
+        
+        // 정답 확인
+        function checkAnswer() {
+            const isCorrect = shuffledPieces.every((piece, index) => 
+                piece === currentVerse.pieces[index]
+            );
+            
+            if (isCorrect) {
+                showResult();
+            } else {
+                alert('아직 순서가 맞지 않아요! 다시 시도해보세요. 😊');
+            }
+        }
+        
+        // 결과 보기
+        function showResult() {
+            document.getElementById('puzzleScreen').style.display = 'none';
+            document.getElementById('resultScreen').style.display = 'block';
+            
+            const correctVerseDiv = document.getElementById('correctVerse');
+            const explanationDiv = document.getElementById('explanation');
+            
+            correctVerseDiv.innerHTML = `
+                <strong>${currentVerse.reference}</strong><br><br>
+                ${currentVerse.pieces.join(' ')}
+            `;
+            
+            explanationDiv.textContent = currentVerse.explanation;
+        }
+        
+        // 퍼즐 다시 섞기
+        function resetPuzzle() {
+            for (let i = shuffledPieces.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledPieces[i], shuffledPieces[j]] = [shuffledPieces[j], shuffledPieces[i]];
+            }
+            renderPuzzle();
+            hintUsed = false;
+        }
+        
+        // 새로운 게임
+        function newGame() {
+            document.getElementById('resultScreen').style.display = 'none';
+            document.getElementById('puzzleScreen').style.display = 'block';
+            loadRandomVerse();
+        }
+        
+        // 결과 저장
+        function saveResult() {
+            const resultText = `${currentVerse.reference}\n\n${currentVerse.pieces.join(' ')}\n\n${currentVerse.explanation}`;
+            
+            if (navigator.share) {
+                // 모바일 네이티브 공유
+                navigator.share({
+                    title: '말씀 조각 맞추기 결과',
+                    text: resultText
+                });
+            } else {
+                // 클립보드 복사
+                navigator.clipboard.writeText(resultText).then(() => {
+                    alert('결과가 클립보드에 복사되었습니다! 📋');
+                }).catch(() => {
+                    // 클립보드 API를 지원하지 않는 경우
+                    const textArea = document.createElement('textarea');
+                    textArea.value = resultText;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    alert('결과가 클립보드에 복사되었습니다! 📋');
+                });
+            }
+        }
+        
+        // === 관리자 기능들 ===
+        
+        // 비밀번호 모달 표시
+        function showPasswordModal() {
+            document.getElementById('passwordModal').classList.remove('hidden');
+            document.getElementById('passwordInput').focus();
+        }
+        
+        // 비밀번호 모달 닫기
+        function closePasswordModal() {
+            document.getElementById('passwordModal').classList.add('hidden');
+            document.getElementById('passwordInput').value = '';
+        }
+        
+        // 비밀번호 확인
+        function checkPassword() {
+            const password = document.getElementById('passwordInput').value;
+            if (password === ADMIN_PASSWORD) {
+                closePasswordModal();
+                showAdminScreen();
+            } else {
+                alert('비밀번호가 틀렸습니다.');
+                document.getElementById('passwordInput').value = '';
+            }
+        }
+        
+        // 관리자 화면 표시
+        function showAdminScreen() {
+            document.getElementById('homeScreen').style.display = 'none';
+            document.getElementById('adminScreen').style.display = 'block';
+            renderVerseList();
+            clearForm();
+        }
+        
+        // 구절 목록 렌더링
+        function renderVerseList() {
+            const verses = loadVerses();
+            const container = document.getElementById('verseListContainer');
+            
+            if (verses.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #999;">등록된 구절이 없습니다.</p>';
+                return;
+            }
+            
+            container.innerHTML = verses.map((verse, index) => `
+                <div class="verse-item">
+                    <div class="verse-reference">${verse.reference}</div>
+                    <div class="verse-pieces">${verse.pieces.join(' ')}</div>
+                    <div class="verse-explanation">${verse.explanation}</div>
+                    <div class="verse-actions">
+                        <button class="btn edit-btn" onclick="editVerse(${index})">✏️ 수정</button>
+                        <button class="btn delete-btn" onclick="deleteVerse(${index})">🗑️ 삭제</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // 조각 추가
+        function addPiece() {
+            const container = document.getElementById('piecesContainer');
+            const pieceDiv = document.createElement('div');
+            pieceDiv.className = 'piece-item';
+            pieceDiv.innerHTML = `
+                <input type="text" class="form-input piece-input" placeholder="새로운 문장">
+                <button class="btn remove-piece-btn" onclick="removePiece(this)">삭제</button>
+            `;
+            container.appendChild(pieceDiv);
+        }
+        
+        // 조각 제거
+        function removePiece(button) {
+            const container = document.getElementById('piecesContainer');
+            if (container.children.length > 1) {
+                button.parentElement.remove();
+            } else {
+                alert('최소 하나의 조각은 필요합니다.');
+            }
+        }
+        
+        // 폼 초기화
+        function clearForm() {
+            document.getElementById('newReference').value = '';
+            document.getElementById('newExplanation').value = '';
+            
+            const container = document.getElementById('piecesContainer');
+            container.innerHTML = `
+                <div class="piece-item">
+                    <input type="text" class="form-input piece-input" placeholder="첫 번째 문장">
+                    <button class="btn remove-piece-btn" onclick="removePiece(this)">삭제</button>
+                </div>
+            `;
+            
+            editingIndex = -1;
+        }
+        
+        // 구절 저장
+        function saveVerse() {
+            const reference = document.getElementById('newReference').value.trim();
+            const explanation = document.getElementById('newExplanation').value.trim();
+            const pieceInputs = document.querySelectorAll('.piece-input');
+            
+            if (!reference) {
+                alert('구절 참조를 입력해주세요.');
+                return;
+            }
+            
+            if (!explanation) {
+                alert('설교 해설을 입력해주세요.');
+                return;
+            }
+            
+            const pieces = [];
+            pieceInputs.forEach(input => {
+                const value = input.value.trim();
+                if (value) {
+                    pieces.push(value);
+                }
+            });
+            
+            if (pieces.length < 2) {
+                alert('최소 2개 이상의 조각이 필요합니다.');
+                return;
+            }
+            
+            const newVerse = {
+                reference,
+                pieces,
+                explanation
+            };
+            
+            const verses = loadVerses();
+            
+            if (editingIndex >= 0) {
+                // 수정 모드
+                verses[editingIndex] = newVerse;
+                alert('구절이 수정되었습니다! ✨');
+            } else {
+                // 추가 모드
+                verses.push(newVerse);
+                alert('새 구절이 추가되었습니다! 🎉');
+            }
+            
+            saveVerses(verses);
+            renderVerseList();
+            clearForm();
+        }
+        
+        // 구절 수정
+        function editVerse(index) {
+            const verses = loadVerses();
+            const verse = verses[index];
+            
+            document.getElementById('newReference').value = verse.reference;
+            document.getElementById('newExplanation').value = verse.explanation;
+            
+            // 기존 조각들 제거하고 새로 추가
+            const container = document.getElementById('piecesContainer');
+            container.innerHTML = '';
+            
+            verse.pieces.forEach((piece, i) => {
+                const pieceDiv = document.createElement('div');
+                pieceDiv.className = 'piece-item';
+                pieceDiv.innerHTML = `
+                    <input type="text" class="form-input piece-input" value="${piece}">
+                    <button class="btn remove-piece-btn" onclick="removePiece(this)">삭제</button>
+                `;
+                container.appendChild(pieceDiv);
+            });
+            
+            editingIndex = index;
+            
+            // 폼 위치로 스크롤
+            document.querySelector('.admin-form').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // 구절 삭제
+        function deleteVerse(index) {
+            const verses = loadVerses();
+            const verse = verses[index];
+            
+            if (confirm(`"${verse.reference}" 구절을 삭제하시겠습니까?`)) {
+                verses.splice(index, 1);
+                saveVerses(verses);
+                renderVerseList();
+                alert('구절이 삭제되었습니다.');
+            }
+        }
+        
+        // 엔터키로 비밀번호 확인
+        document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkPassword();
+            }
+        });
+        
+        // 페이지 로드 시 초기화
+        window.addEventListener('load', function() {
+            // 기본 구절들이 브라우저 저장소에 없으면 저장
+            if (!localStorage.getItem('bibleVerses')) {
+                saveVerses(defaultVerses);
+            }
+        });
+    </script>
+```
+
+</body>
+</html>
