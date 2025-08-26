@@ -568,6 +568,11 @@ p.lead{color:var(--sub);font-size:1.05rem}
             <button class="btn back-btn" onclick="goHome()">🏠 홈</button>
         </div>
     </div>
+        
+    <!-- 정답 피드백 영역 -->
+    <div id="resultToast" class="result-toast" role="status" aria-live="polite">
+        </div>
+    </div>
     
     <!-- 관리자 화면 -->
     <div class="admin-screen" id="adminScreen">
@@ -1044,6 +1049,39 @@ p.lead{color:var(--sub);font-size:1.05rem}
             saveVerses(defaultVerses);
         }
     });
+    // 진동 헬퍼(모바일)
+const buzz = (ms=20) => { try { navigator.vibrate?.(ms); } catch(e){} };
+
+// 선택-교체
+let first = null;
+document.querySelectorAll('.piece').forEach(el=>{
+  el.tabIndex = 0; // 키보드 포커스
+  el.addEventListener('click', onPick);
+  el.addEventListener('keydown', e=>{
+    if(e.key===' '||e.key==='Enter'){ e.preventDefault(); onPick.call(el); }
+  });
+});
+function onPick(){
+  const el = this;
+  if(!first){ first = el; el.classList.add('selected'); buzz(); return; }
+  if(first===el){ first.classList.remove('selected'); first=null; return; }
+  swapText(first, el);
+  first.classList.remove('selected'); first = null; buzz();
+  // TODO: checkAnswer() 호출 후 결과 표시
+}
+
+function swapText(a,b){
+  const t = a.textContent; a.textContent = b.textContent; b.textContent = t;
+}
+
+function showToast(msg){
+  const t=document.getElementById('resultToast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 1800);
+}
+
+// 예: 정답 시
+// showToast('정답입니다!'); // + confetti() 등
 </script>
 
 </body>
