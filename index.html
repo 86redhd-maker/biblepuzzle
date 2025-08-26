@@ -575,6 +575,13 @@ p.lead{color:var(--sub);font-size:1.05rem}
             <h2>⚙️ 구절 관리</h2>
             <p>성경 구절을 추가하거나 수정할 수 있습니다</p>
         </div>
+
+        <!-- === JSON Import/Export (관리자 전용) === -->
+        <div class="admin-tools" style="display:flex; gap:8px; margin:12px 0;">
+            <button class="btn" id="btnExport">JSON 내보내기</button>
+            <button class="btn" id="btnImport">JSON 가져오기</button>
+                <input type="file" id="fileImport" accept="application/json" hidden>
+            </div>
         
         <!-- 새 구절 추가 폼 -->
         <div class="admin-form">
@@ -684,6 +691,53 @@ p.lead{color:var(--sub);font-size:1.05rem}
     function saveVerses(verses) {
         localStorage.setItem('bibleVerses', JSON.stringify(verses));
     }
+
+    // === Export ===
+document.getElementById("btnExport").addEventListener("click", () => {
+  const verses = loadVerses(); // 네가 이미 만든 함수
+  const blob = new Blob([JSON.stringify(verses, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "biblepuzzle_verses.json";
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+});
+
+// === Import ===
+document.getElementById("btnImport").addEventListener("click", () => {
+  document.getElementById("fileImport").click();
+});
+
+document.getElementById("fileImport").addEventListener("change", async (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+
+    // 간단 검증: 배열 + 각 항목에 ref, pieces(배열) 존재
+    if (!Array.isArray(data)) throw new Error("최상위가 배열이어야 합니다.");
+    for (const v of data) {
+      if (!v?.ref || !Array.isArray(v?.pieces)) {
+        throw new Error("각 항목에 ref와 pieces(배열)가 필요합니다.");
+      }
+    }
+
+    // 로컬스토리지에 저장
+    saveVerses(data);
+
+    // 화면 즉시 갱신(네 함수명에 맞춰 자동 호출; 없으면 무시)
+    window.renderVerseList?.(data);
+    window.refreshAdminList?.();
+    // 퍼즐 데이터 재적용 함수가 따로 있으면 여기에 추가
+    // window.initPuzzleData?.(data);
+
+    alert("가져오기 완료!");
+  } catch (err) {
+    alert("가져오기 실패: " + err.message);
+  } finally {
+    e.target.value = ""; // 같은 파일 재선택 가능하게 초기화
+  }
     
     // 게임 시작
     function startGame() {
@@ -1045,6 +1099,123 @@ p.lead{color:var(--sub);font-size:1.05rem}
         }
     });
    
+<script>
+/** === 0) 앱 상태 연결 (기존 변수명 매핑) ===========================
+ * 이미 쓰고 있는 구절 배열이 있다면 여기에 이름 맞춰주세요.
+ * 예: 기존에 window.verses 또는 window.VERSES 를 쓴다면 아래를 고치세요.
+ */
+const EXISTING_VERSES = (window.verses || window.VERSES || []);
+
+/** === 1) DB 스키마 & LS 키 ======================================== */
+let DB = {
+  version: 1,
+  verses: Array.isArray(EXISTING_VERSES) ? EXISTING_VERSES : []
+};
+const LS_KEY = "biblepuzzle_db_v1";
+
+/** === 2) 저장/불러오기 유틸 ======================================= */
+function saveToLocal(){
+  try { localStorage.setItem(LS_KEY, JSON.stringify(DB)); }
+  catch(e){ console.warn("[saveToLocal] 실패:", e); }
+}
+
+(function loadFromLocal(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(!raw) return;
+    const data = JSON.parse(raw);
+    const err = validateDB(data);
+    if(err){ console.warn("[loadFromLocal] 무시(검증실패):", err); return; }
+    DB = data;
+    // 기존 전역 배열을 쓰는 코드가 있다면 동기화:
+    if (Array.isArray(window.verses)) window.verses = DB.verses;
+    if (Array.isArray(window.VERSES)) window.VERSES = DB.verses;
+  }catch(e){ console.warn("[loadFromLocal] 실패:", e); }
+})();
+
+function downloadJSON(filename, obj){
+  const blob = new Blob([JSON.stringify(obj, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function validateDB(data){
+  if(!data || typeof data!=="object") return "최상위가 객체 아님";
+  if(!Array.isArray(data.verses)) return "verses 배열 없음";
+  for(const v of data.verses){
+    if(!v || typeof v!=="object") return "verse 항목 타입 오류";
+    if(!v.ref) return "ref 누락";
+    if(!Array.isArray(v.pieces)) return "pieces 배열 누락";
+  }
+  return null;
+}
+
+/** === 3) 버튼 바인딩 (관리자 전용 UI) ============================= */
+const $exportBtn = document.getElementById("btnExport");
+const $importBtn = document.getElementById("btnImport");
+const $fileInput = document.getElementById("fileImport");
+
+$exportBtn && $exportBtn.addEventListener("click", ()=>{
+  downloadJSON("biblepuzzle_verses.json", DB);
+});
+
+$importBtn && $importBtn.addEventListener("click", ()=> $fileInput?.click());
+
+$fileInput && $fileInput.addEventListener("change", async (e)=>{
+  const file = e.target.files?.[0];
+  if(!file) return;
+  try{
+    const text = await file.text();
+    const data = JSON.parse(text);
+    const err = validateDB(data);
+    if(err){ alert("가져오기 실패: " + err); return; }
+
+    DB = data;
+    // 전역 배열을 사용하는 기존 코드와 동기화
+    if (Array.isArray(window.verses)) window.verses = DB.verses;
+    if (Array.isArray(window.VERSES)) window.VERSES = DB.verses;
+
+    saveToLocal();
+
+    // 🔁 화면 갱신: 네 앱의 “목록 다시 그리기” 함수명을 넣어주세요.
+    // 예) renderVerseList(DB.verses);
+    // 예) refreshAdminList();
+    window.renderVerseList?.(DB.verses);
+    window.refreshAdminList?.();
+
+    alert("가져오기 완료!");
+  }catch(e){
+    alert("JSON 파싱 실패: " + e.message);
+  }finally{
+    e.target.value = "";
+  }
+});
+
+/** === 4) 변경 지점 후킹(필수) =====================================
+ * '구절 추가/수정/삭제'가 일어나는 곳에서 saveToLocal()을 호출해야
+ * 로컬에 자동 저장됩니다. 아래 3가지 래퍼를 제공하니,
+ * 네 기존 함수명을 여기에 연결만 하면 됩니다.
+ */
+
+// (예시) 새 구절 추가
+window.onVerseAdded = function(newVerseObj){
+  DB.verses.push(newVerseObj);
+  saveToLocal();
+};
+
+// (예시) 구절 수정 (index로 찾아 교체)
+window.onVerseUpdated = function(index, patchedVerseObj){
+  if(DB.verses[index]) DB.verses[index] = patchedVerseObj;
+  saveToLocal();
+};
+
+// (예시) 구절 삭제
+window.onVerseDeleted = function(index){
+  if(DB.verses[index]) DB.verses.splice(index, 1);
+  saveToLocal();
+};
 </script>
 
 </body>
