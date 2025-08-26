@@ -225,6 +225,38 @@
 
     /* 접근성 */
     :focus-visible{ outline:3px solid rgba(110,168,254,.6); outline-offset:2px; border-radius:10px }
+
+    /* === Hotfix: 클릭 막힘 & 다이아 패턴 제거 === */
+
+/* 배경 데코 레이어를 '진짜 뒤'로 보내서 클릭 안 막게 */
+body::after{
+  pointer-events: none !important;
+  z-index: -1 !important;            /* 👈 컨텐츠 뒤로 확실히 */
+  opacity: .85 !important;
+  /* 별(작은 반복) 제거 → 다이아 느낌 원인 */
+  background-image:
+    /* 큰 구름 */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='120'><path fill='%23fff' fill-opacity='.92' d='M50 95h160a44 44 0 1 0-30-76 60 60 0 0 0-98 28 30 30 0 1 0-32 48z'/></svg>"),
+    /* 작은 구름 */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='90'><path fill='%23fff' fill-opacity='.92' d='M36 74h108a28 28 0 1 0-20-48 48 48 0 0 0-66 24 22 22 0 1 0-22 24z'/></svg>"),
+    /* 퍼즐(노랑) */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='84' height='84' viewBox='0 0 84 84'><path fill='%23ffd96b' d='M30 8a8 8 0 1 0 16 0h10c8 0 14 6 14 14v6a8 8 0 1 0 0 16v8c0 8-6 14-14 14H46a8 8 0 1 0-16 0H20c-8 0-14-6-14-14V44a8 8 0 1 0 0-16v-6C6 14 12 8 20 8h10z'/></svg>"),
+    /* 퍼즐(핑크) */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='84' height='84' viewBox='0 0 84 84'><path fill='%23ffb3c7' d='M30 8a8 8 0 1 0 16 0h10c8 0 14 6 14 14v6a8 8 0 1 0 0 16v8c0 8-6 14-14 14H46a8 8 0 1 0-16 0H20c-8 0-14-6-14-14V44a8 8 0 1 0 0-16v-6C6 14 12 8 20 8h10z'/></svg>");
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat !important;
+  background-size: 260px 120px, 180px 90px, 84px 84px, 84px 84px !important;
+  background-position: 8% 16%, 82% 10%, 90% 78%, 12% 82% !important;
+}
+
+/* 컨텐츠 스택을 위로 (혹시 모를 테마 충돌 방지) */
+.container{ position: relative !important; z-index: 0 !important; }
+.home-screen, .puzzle-screen, .result-screen, .admin-screen{ position: relative; z-index: 1; }
+
+/* 버튼은 반드시 클릭되도록 안전장치 (보통 필요 없지만 혹시 대비) */
+button, .btn, .start-btn { pointer-events: auto !important; }
+
+/* 비밀번호 모달이 열려있지 않을 때는 절대 가리지 않도록 */
+.password-modal.hidden { display: none !important; opacity: 0 !important; }
   </style>
 </head>
 
