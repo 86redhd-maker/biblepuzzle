@@ -48,7 +48,7 @@
       line-height: 1.5;
     }
 
-    /* 반짝이는 배경 애니메이션 - 모바일에서는 단순화 */
+    /* 반짝이는 배경 애니메이션 */
     body::before {
       content: '';
       position: fixed;
@@ -59,17 +59,27 @@
       pointer-events: none;
       z-index: -1;
       background-image: 
+        /* 큰 구름들 */
+        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='100'><path fill='%23fff' fill-opacity='.15' d='M30 80h140a30 30 0 1 0-20-52 40 40 0 0 0-65 20 22 22 0 1 0-55 32z'/></svg>"),
+        /* 작은 구름들 */
+        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='150' height='80'><path fill='%23fff' fill-opacity='.12' d='M25 65h100a25 25 0 1 0-15-42 35 35 0 0 0-58 18 18 18 0 1 0-27 24z'/></svg>"),
+        /* 반짝이들 */
         radial-gradient(2px 2px at 20px 30px, #fff, transparent),
         radial-gradient(1px 1px at 40px 70px, rgba(255, 255, 255, 0.8), transparent),
-        radial-gradient(1px 1px at 90px 40px, #fff, transparent);
-      background-repeat: repeat;
-      background-size: 200px 100px;
-      animation: sparkle 4s linear infinite;
+        radial-gradient(1px 1px at 90px 40px, #fff, transparent),
+        radial-gradient(2px 2px at 160px 20px, rgba(255, 255, 255, 0.6), transparent),
+        /* 스티커 모양들 */
+        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='60' height='60'><circle fill='%23ff6b9d' fill-opacity='.08' cx='30' cy='30' r='25'/></svg>"),
+        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='50' height='50'><rect fill='%234ecdc4' fill-opacity='.06' x='10' y='10' width='30' height='30' rx='15'/></svg>");
+      background-repeat: repeat, repeat, repeat, repeat, repeat, repeat, repeat, repeat;
+      background-size: 400px 200px, 300px 160px, 200px 100px, 250px 120px, 180px 90px, 220px 110px, 120px 120px, 100px 100px;
+      background-position: 0 0, 200px 50px, 0 0, 100px 30px, 50px 60px, 150px 80px, 20px 40px, 300px 20px;
+      animation: sparkleFlow 8s linear infinite;
     }
 
-    @keyframes sparkle {
-      0% { transform: translateY(0px); }
-      100% { transform: translateY(-100px); }
+    @keyframes sparkleFlow {
+      0% { transform: translateY(100vh) translateX(0); }
+      100% { transform: translateY(-200px) translateX(-50px); }
     }
 
     .container {
@@ -82,7 +92,7 @@
     .home-screen {
       background: var(--bg-card);
       border-radius: var(--border-radius);
-      padding: 40px 25px;
+      padding: 60px 25px 40px 25px; /* 위쪽 패딩 증가로 관리자 버튼 공간 확보 */
       text-align: center;
       box-shadow: var(--shadow-soft);
       backdrop-filter: blur(10px);
@@ -108,12 +118,12 @@
 
     .admin-link {
       position: absolute;
-      top: 15px;
-      right: 15px;
+      top: 18px;
+      right: 18px;
       background: linear-gradient(135deg, var(--accent), var(--orange));
       color: var(--text-dark);
       border: none;
-      padding: 8px 12px;
+      padding: 8px 14px;
       border-radius: 20px;
       font-weight: 700;
       font-size: 13px;
@@ -121,6 +131,8 @@
       box-shadow: 0 4px 12px rgba(255, 230, 109, 0.4);
       transition: all 0.3s ease;
       z-index: 10;
+      min-width: 80px; /* 최소 너비 설정 */
+      white-space: nowrap; /* 텍스트 줄바꿈 방지 */
     }
 
     .admin-link:hover {
@@ -241,14 +253,14 @@
       line-height: 1.5;
     }
 
-    /* 퍼즐 영역 - 스티커 컬렉션북 스타일 */
+    /* 퍼즐 영역 - 스티커 컬렉션북 스타일 (1열 배치로 변경) */
     .puzzle-area {
       background: linear-gradient(135deg, #f7fafc, #edf2f7);
       border: 3px solid #e2e8f0;
       border-radius: var(--border-radius);
       padding: 20px;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      display: flex;
+      flex-direction: column;
       gap: 15px;
       min-height: 280px;
       position: relative;
@@ -270,15 +282,15 @@
       white-space: nowrap;
     }
 
-    /* 스티커 조각들 */
+    /* 스티커 조각들 - 1열로 정렬 */
     .puzzle-piece {
       background: linear-gradient(135deg, var(--primary), #ff8a9b);
       color: white;
       border: none;
       border-radius: var(--sticker-radius);
-      padding: 14px 16px;
+      padding: 16px 20px;
       font-weight: 700;
-      font-size: clamp(0.9rem, 2.8vw, 1rem);
+      font-size: clamp(1rem, 3.5vw, 1.1rem);
       line-height: 1.4;
       cursor: pointer;
       position: relative;
@@ -288,12 +300,14 @@
         inset 0 1px 0 rgba(255, 255, 255, 0.3);
       text-align: center;
       overflow: hidden;
-      min-height: 60px;
+      min-height: 50px;
       display: flex;
       align-items: center;
       justify-content: center;
       word-break: keep-all;
       hyphens: none;
+      width: 100%; /* 전체 너비 사용 */
+      max-width: 100%; /* 최대 너비 제한 */
     }
 
     /* 스티커 홀로그램 효과 */
@@ -741,22 +755,32 @@
     /* 모바일 최적화 */
     @media (max-width: 768px) {
       body {
-        padding: 10px;
+        padding: 12px;
         font-size: 14px;
       }
       
-      .home-screen,
+      .home-screen {
+        padding: 50px 20px 35px 20px; /* 관리자 버튼 공간 확보 */
+      }
+      
+      .admin-link {
+        top: 15px;
+        right: 15px;
+        padding: 7px 12px;
+        font-size: 12px;
+        min-width: 75px;
+      }
+      
       .puzzle-screen,
       .result-screen,
       .admin-screen {
-        padding: 20px 15px;
+        padding: 18px 15px;
       }
       
       .puzzle-area {
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
         gap: 12px;
         padding: 18px 15px;
-        min-height: 250px;
+        min-height: 200px;
       }
 
       .puzzle-area::before {
@@ -765,9 +789,9 @@
       }
       
       .puzzle-piece {
-        padding: 12px 14px;
-        min-height: 55px;
-        font-size: 0.9rem;
+        padding: 14px 18px;
+        min-height: 45px;
+        font-size: 1rem;
       }
       
       .controls, .share-controls {
@@ -831,25 +855,50 @@
       .password-modal-content {
         padding: 20px;
       }
+
+      /* 홈 화면 제목 여백 조정 */
+      .home-screen h1 {
+        margin-top: 15px; /* 관리자 버튼과 더 많은 간격 */
+        margin-bottom: 12px;
+      }
+
+      .home-screen p {
+        margin-bottom: 25px;
+      }
     }
 
     /* 아주 작은 화면 (320px 이하) */
     @media (max-width: 320px) {
+      .home-screen {
+        padding: 45px 15px 30px 15px;
+      }
+
+      .admin-link {
+        top: 12px;
+        right: 12px;
+        padding: 6px 10px;
+        font-size: 11px;
+        min-width: 70px;
+      }
+
       .puzzle-area {
-        grid-template-columns: 1fr;
         gap: 10px;
         padding: 15px 10px;
       }
 
       .puzzle-piece {
-        font-size: 0.85rem;
-        padding: 10px 12px;
-        min-height: 50px;
+        font-size: 0.95rem;
+        padding: 12px 16px;
+        min-height: 42px;
       }
 
       .btn {
         font-size: 0.8rem;
         padding: 8px 12px;
+      }
+
+      .home-screen h1 {
+        margin-top: 20px;
       }
     }
 
